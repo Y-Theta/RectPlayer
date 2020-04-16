@@ -1,0 +1,139 @@
+(function() {
+  let ie = !!(window.attachEvent && !window.opera);
+  let webkit = /webkit\/(\d+)/i.test(navigator.userAgent) && ~~RegExp.$1 < 525;
+  let fn = [];
+  let run = function() {
+    for (var i = 0; i < fn.length; i++) fn[i]();
+  };
+  document.ready = function(f) {
+    if (!ie && !webkit && document.addEventListener) {
+      return document.addEventListener("DOMContentLoaded", f, false);
+    }
+    if (fn.push(f) > 1) return;
+    if (ie)
+      (function() {
+        try {
+          document.documentElement.scroll({ left: 0 });
+          run();
+        } catch (err) {
+          setTimeout(arguments.callee, 0);
+        }
+      })();
+    else if (webkit)
+      var t = setInterval(function() {
+        if (/^(loaded|complete)$/.test(document.readyState)) clearInterval(t), run();
+      }, 0);
+  };
+})();
+
+var handle;
+var vpanel, clip;
+document.ready(() => {
+  handle = document.querySelector("#rectPlayer .cpanel .handle");
+  var volumn = document.querySelector("#rectPlayer .cpanel .volume");
+  handle.addEventListener("click", this.expandorhide);
+  volumn.addEventListener("DOMMouseScroll", scrollFunc, false);
+  volumn.onmousewheel = scrollFunc;
+
+  var ol = document.getElementById("openlist");
+  ol.addEventListener("click", this.openlist);
+  var vt = document.getElementById("volume-track");
+  vpanel = document.getElementById("volume");
+  vt.addEventListener("click", this.tc);
+});
+
+function openlist(e) {
+    var player = document.getElementById("rectPlayer");
+    var classl = player.classList;
+    classl.contains("list-on")
+      ? (classl.remove("list-on"), classl.add("list-off"))
+      : classl.contains("list-off")
+      ? (classl.remove("list-off"), classl.add("list-on"))
+      : classl.add("list-on");
+}
+
+function tc(e) {
+  clip = vpanel.getBoundingClientRect();
+
+  console.log(e, clip);
+
+  var cw = clip.width / 2;
+  var ch = clip.height / 2;
+  var x1 = e.clientX - clip.x,
+    y1 = e.clientY - clip.y;
+
+  var ang = getAngle(
+    {
+      x: cw - cw,
+      y: 0 - ch
+    },
+    {
+      x: x1 - cw,
+      y: y1 - ch
+    }
+  );
+
+  console.log(ang, x1, y1);
+  vl = (ang / 360) * 6000;
+  drawcir(vl);
+}
+
+var vl = 0;
+
+const getAngle = ({ x: x1, y: y1 }, { x: x2, y: y2 }) => {
+  const dot = x1 * x2 + y1 * y2;
+  const det = x1 * y2 - y1 * x2;
+  const angle = (Math.atan2(det, dot) / Math.PI) * 180;
+  return (angle + 360) % 360;
+};
+
+function scrollFunc(e) {
+  e = e || window.event;
+  var data;
+  if (e.wheelDelta) {
+    //IE/Opera/Chrome
+    data = e.wheelDelta;
+  } else if (e.detail) {
+    //Firefox
+    data = e.detail;
+  }
+  vl += data;
+  vl = vl < 6000 ? (vl < 0 ? 0 : vl) : 6000;
+  drawcir(vl);
+  vpanel.title = "音量 ：" + (vl / 6000 *100).toFixed(0);
+}
+
+function drawcir(vl) {
+  let ang = vl / 6000;
+  var A = ang * Math.PI * 2;
+  var x = 24 * Math.sin(A);
+  var y = 24 * Math.cos(A);
+  x = 32 + x;
+  y = 32 - y;
+
+  var pathd = "";
+  if (ang < 0.5) pathd = "M 32,8 A 24 24 0 0 1 " + x + " " + y;
+  else if (ang == 1) pathd = "M 32,8 A 24 24 0 1 1 " + (x - 0.01) + " " + y;
+  else pathd = "M 32,8 A 24 24 0 1 1 " + x + " " + y;
+  var vpath = document.getElementById("volume-path");
+  //var vnum = document.getElementById("volume-num");
+  vpath.setAttribute("d", pathd);
+  // vnum.innerHTML = (ang*100).toFixed(0);
+
+  var volumn = document.querySelector("#rectPlayer .cpanel .volume");
+  if (vl == 0) {
+    volumn.classList.add("mute");
+  } else {
+    volumn.classList.contains("mute") ? volumn.classList.remove("mute") : null;
+  }
+}
+
+function expandorhide() {
+  var player = document.getElementById("rectPlayer");
+  var classl = player.classList;
+  classl.contains("panel-on")
+    ? (classl.remove("panel-on"), classl.add("panel-off"))
+    : classl.contains("panel-off")
+    ? (classl.remove("panel-off"), classl.add("panel-on"))
+    : classl.add("panel-on");
+}

@@ -1,0 +1,24 @@
+{
+  "name": "rect-player",
+  "version": "0.0.0",
+  "description": "RectPlayer",
+  "main": "rectPlayer.js",
+  "author": {
+    "name": ""
+  },
+  "scripts": {
+    "dev": "webpack --mode development",
+    "build": "webpack --mode production",
+    "clean": "tsc --build --clean"
+  },
+  "devDependencies": {
+    "@types/less": "^3.0.1",
+    "@types/node": "^8.0.14",
+    "less": "^3.11.1",
+    "ts-loader": "^6.2.2",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
+    "xml-js": "^1.6.11"
+  }
+}

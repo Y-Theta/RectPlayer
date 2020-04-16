@@ -1,0 +1,518 @@
+@coverheight: 84px;
+@coverwidth: 84px;
+@collapsewidth: 16px;
+@flexwidth: 324px;
+
+@listheight: 144px;
+
+@trackpanelthickness: 12px;
+@trackthickness: 8px;
+@trackpadding: 8px;
+@trackbottom: 4px;
+
+@timewidth: 72px;
+
+@btnsize: 32px;
+@btn_volume: @btnsize + 16px;
+@btn_mode: @btnsize + 4px;
+@btn_ol: @btnsize - 20px;
+@btnpadding: 4px;
+@xoffset: @collapsewidth + @coverwidth - @flexwidth;
+
+@coverbtn: #ffffffaa;
+@coverbtnhover: darken(@coverbtn, 20%);
+@blackmask: #000000aa;
+
+// playercolortheme
+@foreground: #080808;
+
+@handle: #f4f4f4;
+@panel: #fefefe;
+@track: rgb(131, 204, 186);
+@track-load: rgb(163, 168, 162);
+@track-now: rgb(229, 175, 149);
+@track-thumb: rgb(157, 126, 185);
+@track-thumb-hover: #4a4a4a;
+
+@btn-normal: #8c8c8c;
+@btn-hover: #4c4c4c;
+
+@Mobile: ~"only screen and (max-width: 767px)";
+@LapTop: ~"only screen and (min-width: 768px)";
+@NarrowMode: ~"only screen and (max-width: 1080px)";
+
+// #region @mixin
+.flex-layout-row() {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+}
+
+.flex-layout-column() {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.matchparent() {
+  width: 100%;
+  height: 100%;
+}
+
+.centerparent(@padding) {
+  @dp: 2 * @padding;
+  width: calc(~"100% - @{dp}");
+  height: calc(~"100% - @{dp}");
+  left: @padding;
+  top: @padding;
+}
+
+.nonesize () {
+  width: 0;
+  height: 0;
+}
+
+.noneMP() {
+  margin: 0;
+  padding: 0;
+}
+
+.transition(@arguments) {
+  transition: @arguments;
+  -moz-transition: @arguments;
+  -webkit-transition: @arguments;
+  -o-transition: @arguments;
+}
+
+.transform(@arguments) {
+  transform: @arguments;
+  -ms-transform: @arguments;
+  -moz-transform: @arguments;
+  -webkit-transform: @arguments;
+  -o-transform: @arguments;
+}
+
+.anime(@arguments) {
+  animation: @arguments;
+  -webkit-animation: @arguments;
+}
+
+.keyframes(@name, @rules) {
+  @-webkit-keyframes @name {
+    @rules();
+  }
+
+  @keyframes @name {
+    @rules();
+  }
+}
+
+.no-interact {
+    -moz-user-select: none;
+    -o-user-select: none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+.flex-column {
+  .flex-layout-column();
+}
+
+.flex-row {
+  .flex-layout-row();
+}
+
+.flex-row-adapt {
+  @media @Mobile {
+    .flex-layout-column();
+  }
+
+  @media @LapTop {
+    .flex-layout-row();
+  }
+}
+
+// #endregion
+
+// #region Animations
+.keyframes(toggle_panel_on, {0% {transform: translateX(@xoffset) ;} 100% {transform: translateX(@coverwidth) ;}});
+
+.keyframes(toggle_panel_off, {0% {transform: translateX(@coverwidth) ;} 100% {transform: translateX(@xoffset) ;}});
+
+.keyframes (clip_on, {0% {width: @collapsewidth + @coverwidth;} 100% {width: @flexwidth + @coverwidth;}});
+
+.keyframes (clip_off, {0% {width: @flexwidth + @coverwidth;} 100% {width: @collapsewidth + @coverwidth;}});
+// #endregion
+
+// #region @PlayerStyle
+
+.rpele {
+  .text {
+    color: @foreground;
+    font-weight: 300;
+    font-size: 8pt;
+  }
+}
+
+.svgbtn {
+  position: absolute;
+  display: block;
+
+  svg {
+    width: @btnsize;
+    height: @btnsize;
+    stroke: none;
+    fill: @btn-normal;
+  }
+
+  &:hover {
+    svg {
+      fill: @btn-hover;
+    }
+  }
+}
+
+#rectPlayer {
+  display: block;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: @coverwidth;
+  height: @coverheight;
+  .noneMP();
+
+  * {
+    .noneMP();
+    box-sizing: border-box;
+    display: block;
+  }
+
+  .cover {
+    z-index: 100;
+    .matchparent();
+    position: absolute;
+    overflow: hidden;
+
+    .img {
+      .matchparent();
+      background-image: url(../../cover.jpg);
+      // background: fixed;
+      background-repeat: no-repeat;
+      background-size: cover;
+      -webkit-background-size: cover;
+      -o-background-size: cover;
+      background-position: center center;
+      overflow: hidden;
+    }
+
+    .ccontrol {
+      .matchparent();
+      position: absolute;
+      top: 0;
+      overflow: hidden;
+      padding: 4px 0 0 0;
+      border: 1px solid black;
+
+      &::before {
+        z-index: 101;
+        display: block;
+        position: absolute;
+        border-radius: @coverwidth / 2 @coverheight / 2;
+        content: "";
+        .centerparent(10px);
+        left: 8px;
+        top: 11px;
+        .transition(~".24s all cubic-bezier(0.23, 1, 0.32, 1)");
+      }
+
+      svg {
+        z-index: 102;
+        position: relative;
+        .matchparent();
+      }
+
+      .btn {
+        display: none;
+        fill: @coverbtn;
+
+        &:hover {
+          fill: @coverbtnhover;
+        }
+      }
+    }
+
+    &:hover {
+      .img {
+        filter: blur(0.75px);
+      }
+
+      .ccontrol {
+        &::before {
+          // background-color: fade(@blackmask, 42%);
+          box-shadow: 0 0 32px 2px fade(@blackmask, 100%), 0 0 32px 2px fade(@blackmask, 64%) inset;
+        }
+      }
+    }
+  }
+
+  .cpanelclip {
+    z-index: 91;
+    position: absolute;
+    display: block;
+    height: @coverheight;
+    width: @collapsewidth + @coverwidth;
+    overflow: hidden;
+  }
+
+  .cpanel:extend(.flex-row) {
+    z-index: 90;
+    height: @coverheight;
+    width: @flexwidth;
+    overflow: hidden;
+    position: absolute;
+    background-color: @panel;
+    .transform(~"translateX(@{xoffset})");
+  }
+
+  .handle {
+    position: relative;
+    flex-basis: @collapsewidth;
+    height: 100%;
+    background-color: @handle;
+    border: 1px solid black;
+    border-left: none;
+  }
+
+  .control {
+    position: relative;
+    flex: 1;
+    border-top: 1px solid @blackmask;
+    border-bottom: 1px solid @blackmask;
+
+    .name:extend(.rpele .text) {
+      position: absolute;
+      left: @trackpadding;
+      top: 8px;
+      font-size: 14pt;
+    }
+
+    .author:extend(.rpele .text) {
+      position: absolute;
+      font-weight: 200;
+      left: @trackpadding;
+      top: 32px;
+    }
+
+    .track:extend(.flex-row) {
+      position: absolute;
+      height: @trackpanelthickness;
+      width: calc(~"100% - 2 * @{trackpadding}");
+      margin: 0 @trackpadding;
+      bottom: @trackbottom;
+
+      div {
+        position: relative;
+        height: 100%;
+      }
+
+      .full {
+        flex: 1;
+        top: @trackpanelthickness - @trackthickness;
+        height: @trackthickness;
+        background-color: @track;
+      }
+
+      .loding {
+        width: 120px;
+        background-color: @track-load;
+      }
+
+      .pos {
+        width: 80px;
+        background-color: @track-now;
+      }
+
+      .thumb {
+        width: @trackthickness;
+        background-color: @track-thumb;
+      }
+
+      &:hover {
+        .thumb {
+          background-color: @track-thumb-hover;
+        }
+      }
+    }
+
+    .time:extend(.rpele .text):extend(.no-interact) {
+      position: relative;
+      height: 100%;
+      margin: 0 0 0 @trackpadding;
+      text-align: end;
+
+      p {
+        display: inline;
+      }
+    }
+
+    .volume:extend(.svgbtn all) {
+      right: @trackpadding;
+      bottom: @trackbottom + @trackpanelthickness + 2 * @btnpadding;
+
+      svg {
+        width: @btn_volume;
+        height: @btn_volume;
+      }
+
+      .mute {
+        display: none;
+      }
+
+      .num {
+        display: none;
+      }
+
+      &:hover {
+        .num {
+          display: block;
+        }
+      }
+
+      &.mute {
+        .normal {
+          display: none;
+        }
+
+        .mute {
+          display: block;
+        }
+      }
+    }
+
+    .playmode:extend(.svgbtn all) {
+      right: @trackpadding + @btn_volume;
+      bottom: @trackbottom + @trackpanelthickness + 3 * @btnpadding + 2;
+
+      svg {
+        width: @btn_mode;
+        height: @btn_mode;
+      }
+
+      path {
+        display: none;
+      }
+
+      &.normal {
+        path:nth-child(1) {
+          display: block;
+        }
+      }
+
+      &.repeat {
+        path:nth-child(2) {
+          display: block;
+        }
+      }
+
+      &.repeatone {
+        path:nth-child(3) {
+          display: block;
+        }
+      }
+
+      &.random {
+        path:nth-child(4) {
+          display: block;
+        }
+      }
+    }
+
+    .openlist:extend(.svgbtn all) {
+      right: @btnpadding - 2;
+      top: @btnpadding - 2;
+
+      svg {
+        width: @btn_ol;
+        height: @btn_ol;
+      }
+    }
+  }
+
+  .list:extend(.flex-row) {
+    display: none;
+    position: absolute;
+    width: @flexwidth + 1;
+    height: @listheight;
+    bottom: @coverheight;
+    left: @coverwidth - 1;
+    border: 1px solid black;
+    border-bottom: none;
+
+    .lcontrol {
+      width: 32px;
+      border-right: 1px solid black;
+    }
+  }
+
+  &.play {
+    .cover {
+      &:hover {
+        .ccontrol {
+          .btn:nth-child(2) {
+            display: block;
+          }
+        }
+      }
+    }
+  }
+
+  &.pause {
+    .cover {
+      &:hover {
+        .ccontrol {
+          .btn:nth-child(1) {
+            display: block;
+          }
+        }
+      }
+    }
+  }
+
+  &.panel-on {
+    // .handle {
+    //   border-left: 1px solid black;
+    // }
+
+    &.list-on {
+      .list {
+        display: flex;
+      }
+    }
+
+    .cpanelclip {
+      .anime(~"clip_on 0s steps(1) forwards");
+    }
+
+    .cpanel {
+      .anime(~"toggle_panel_on .24s ease-in forwards");
+    }
+  }
+
+  &.panel-off {
+    .handle {
+      border-left: none;
+    }
+
+    .cpanelclip {
+      .anime(~"clip_off .24s steps(1) forwards");
+    }
+
+    .cpanel {
+      .anime(~"toggle_panel_off .24s ease-out forwards");
+    }
+  }
+}
+
+// #endregion

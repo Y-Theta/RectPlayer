@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tempalte>
+  <player>
+    <audio id="src"></audio>
+    <div id="cover">
+      <img id="cover-img"/>
+      <div id="cover-control">
+
+      </div>
+    </div>
+    <div id="control">
+      <div id="control-name"></div>
+      <div id="control-author"></div>
+      <div id="control-track">
+        <div id="track-loding"></div>
+        <div id="track-pos"></div>
+      </div>
+      <div id="control-time">
+
+      </div>
+      <div id="control-volume">
+        <div class="volume-icon"></div>
+        <div class="volume-percent">
+          <div class="volume-line"></div>
+        </div>
+      </div>
+      <div id="control-playmode">
+
+      </div>
+    </div>
+  </player>
+  <listitem>
+    
+  </listitem>
+</tempalte>
