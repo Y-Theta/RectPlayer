@@ -11,6 +11,7 @@ import { Utils } from "./Utils";
 import { IRectplayerTemplateResolver, DefaultTemplateResolver } from "./RectplayerTemplateResolver";
 import { SourceCore, NeteaseCore, LocalCore } from "./PlayerCore";
 import { RectPlayerOption } from "./PlayerModel";
+import { IControlContract } from "./IControlContract";
 
 export class RectPlayer {
     private _scriptcache: Map<string, string | null>;
@@ -18,6 +19,7 @@ export class RectPlayer {
     private _mode: string;
     private _srcResolver: SourceCore = null;
     private _templateResolver: IRectplayerTemplateResolver = null;
+    private _playerControl :IControlContract = null;
 
     constructor(option: RectPlayerOption | null) {
         Utils._enablelog = option.EnableLog || false;
@@ -104,6 +106,9 @@ export class RectPlayer {
         this.resolve();
     }
 
+    /**
+     * 
+     */
     private resolve() {
         if (!this._loaded) {
             setTimeout(this.resolve.bind(this), 200);
@@ -116,7 +121,8 @@ export class RectPlayer {
                 },
                 success: (data: string) => {
                     let temp = this._templateResolver.ResloveTemplate(data, null);
-                    document.body.appendChild(temp);
+                    document.body.appendChild(temp.View);
+                    this._playerControl = temp.Control;
                 },
                 failed: () => {
                     Utils.Log("Faild !");

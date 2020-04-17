@@ -10,9 +10,10 @@
 
 <body>
     <div id="rectPlayer" class="panel-on pause">
-        <audio id="source" class="src"></audio>
+        <audio id="source" class="src" src="./test.mp3" autoplay="autoplay"></audio>
         <div class="cover">
             <div id="cover" class="img"></div>
+            <div id="cover-resolve"></div>
             <div class="ccontrol">
                 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="-4 -6 48 48">
                     <path id="ctl-play" class="btn" d="M29,18,11,28.39V7.61Z" />
@@ -65,8 +66,18 @@
                             </path>
                         </svg>
                     </div>
-                    <div id="openlist" class="openlist">
-                        <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 64 64">
+                    <div id="ctl-fore" class="fore" title="下一首">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                            <path d="M20.4,19.61V44.39L38.09,32Zm2,3.85L34.61,32,22.4,40.54ZM42,43.2h2V20.8H42Z" />
+                        </svg>
+                    </div>
+                    <div id="ctl-prve" class="prve" title="上一首">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                            <path d="M43.8,44.39V19.61L26.11,32Zm-2-3.85L29.59,32,41.8,23.46ZM22.2,20.8h-2V43.2h2Z" />
+                        </svg>
+                    </div>
+                    <div id="openlist" class="openlist" title="打开播放列表">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 64 64">
                             <path d="M61.39,61.39l-7.47-7.62V10.08H10.23L2.61,2.61H61.39ZM47.3,36.11V16.7H27.89" />
                         </svg>
                     </div>
@@ -79,18 +90,52 @@
         <div class="listclip">
             <div class="list">
                 <div class="lcontrol">
-
+                    <div id="ctl-listadd" class="listadd" title="添加歌曲">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                            <path d="M46,33H33V46H31V33H18V31H31V18h2V31H46Z" />
+                        </svg>
+                    </div>
+                    <div id="ctl-listremove" class="listremove" title="从列表移除歌曲">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                            <path d="M46,33H18V31H46Z" />
+                        </svg>
+                    </div>
+                    <div class="flex-spring"></div>
+                    <div id="ctl-about" class="about" title="关于">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+                            <path
+                                d="M45.33,28.32A13.78,13.78,0,0,0,44,25a13.67,13.67,0,0,0-5-5,13.78,13.78,0,0,0-3.3-1.38,14.06,14.06,0,0,0-7.36,0A13.78,13.78,0,0,0,25,20.05a14.42,14.42,0,0,0-2.8,2.16A14,14,0,0,0,20.06,25a13.41,13.41,0,0,0-1.39,3.3,14.06,14.06,0,0,0,0,7.36A13.41,13.41,0,0,0,20.06,39a13.82,13.82,0,0,0,5,5,13.41,13.41,0,0,0,3.3,1.39,14.06,14.06,0,0,0,7.36,0A13.41,13.41,0,0,0,39,43.94a14,14,0,0,0,2.81-2.16A14.42,14.42,0,0,0,44,39a13.78,13.78,0,0,0,1.38-3.3,14.06,14.06,0,0,0,0-7.36Zm-1.78,6.86A12.3,12.3,0,0,1,42.34,38a11.87,11.87,0,0,1-4.3,4.3,12.3,12.3,0,0,1-2.86,1.21,12,12,0,0,1-6.36,0A12.3,12.3,0,0,1,26,42.34a11.87,11.87,0,0,1-4.3-4.3,12.19,12.19,0,0,1-1.21-2.87A11.55,11.55,0,0,1,20,32a11.67,11.67,0,0,1,.43-3.18A12.3,12.3,0,0,1,21.66,26a11.87,11.87,0,0,1,4.3-4.3,12.3,12.3,0,0,1,2.86-1.21,12,12,0,0,1,6.36,0A12.3,12.3,0,0,1,38,21.66a11.87,11.87,0,0,1,4.3,4.3,12.3,12.3,0,0,1,1.21,2.86,12,12,0,0,1,0,6.36ZM32.92,29.24v9.21H31.08V29.24Zm0-3.69v1.84H31.08V25.55Z" />
+                        </svg>
+                    </div>
                 </div>
-                <ul id="list-detail">
-                    <li>
-
+                <ul id="list-detail" class="detail">
+                    <li class="playing">
+                        <p> </p>
+                        <p id="id">1</p>
+                        <p id="info">sdsds</p>
+                        <p> </p>
+                        <p> </p>
+                    </li>
+                    <li class="selected">
+                        <p> </p>
+                        <p> </p>
+                        <p> </p>
+                        <p> </p>
+                        <p> </p>
+                    </li>
+                    <li >
+                        <p> </p>
+                        <p> </p>
+                        <p> </p>
+                        <p> </p>
+                        <p> </p>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
-    <script src="test.js"></script>
     <script src="../less.min.js"></script>
+    <script src="test.js"></script>
 </body>
 
 </html>

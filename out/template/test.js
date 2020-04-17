@@ -42,6 +42,18 @@ document.ready(() => {
   vt.addEventListener("click", this.tc);
 });
 
+function expandorhide() {
+    var player = document.getElementById("rectPlayer");
+    var classl = player.classList;
+    classl.contains("panel-on")
+      ? (classl.remove("panel-on"), classl.add("panel-off"))
+      : classl.contains("panel-off")
+      ? (classl.remove("panel-off"), classl.add("panel-on"))
+      : classl.add("panel-on");
+    //   v.play();
+
+  }
+
 function openlist(e) {
     var player = document.getElementById("rectPlayer");
     var classl = player.classList;
@@ -50,12 +62,13 @@ function openlist(e) {
       : classl.contains("list-off")
       ? (classl.remove("list-off"), classl.add("list-on"))
       : classl.add("list-on");
+
 }
 
 function tc(e) {
   clip = vpanel.getBoundingClientRect();
 
-  console.log(e, clip);
+//   console.log(e, clip);
 
   var cw = clip.width / 2;
   var ch = clip.height / 2;
@@ -128,12 +141,117 @@ function drawcir(vl) {
   }
 }
 
-function expandorhide() {
-  var player = document.getElementById("rectPlayer");
-  var classl = player.classList;
-  classl.contains("panel-on")
-    ? (classl.remove("panel-on"), classl.add("panel-off"))
-    : classl.contains("panel-off")
-    ? (classl.remove("panel-off"), classl.add("panel-on"))
-    : classl.add("panel-on");
-}
+
+var Visualizer = function(config) {
+    this.audioContext = null;
+    this.analyser = null;
+    this.source = null; //the audio source
+    this.config = config;
+    this.frequency = [];
+    this.playing = false;
+    this.ready = false;
+    this.loadFailed = false;
+};
+
+Visualizer.prototype = {
+    init: function () {
+        this._prepare();
+        this.getData();
+        this._analyser();
+    },
+
+    _prepare: function () {
+        //实例化一个音频上下文类型window.AudioContext。目前Chrome和Firefox对其提供了支持，但需要相应前缀，Chrome中为window.webkitAudioContext，Firefox中为mozAudioContext。
+        // 所以为了让代码更通用，能够同时工作在两种浏览器中，只需要一句代码将前缀进行统一即可。
+        window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
+        try {
+            this.audioContext = new AudioContext();
+        } catch (e) {
+            console.log(e);
+        }
+    },
+
+    _analyser: function () {
+        var that = this;
+        that.analyser = that.audioContext.createAnalyser();
+        that.analyser.smoothingTimeConstant = 0.85;
+        that.analyser.fftSize = 32;//傅里叶变换参数 简化成16个元素数组
+        //将source与分析器连接
+        that.source.connect(that.analyser);
+        //将分析器与destination连接，这样才能形成到达扬声器的通路
+        that.analyser.connect(that.audioContext.destination);
+        that.frequency = new Uint8Array(that.analyser.frequencyBinCount);
+ 
+    },
+    getData: function () {
+        var that = this;
+        //建立缓存源
+        that.source = that.audioContext.createBufferSource();
+        var request = new XMLHttpRequest();
+        //请求资源
+        request.open('GET', that.config.url, true);
+        request.responseType = 'arraybuffer';
+        request.onreadystatechange=function() {
+            if (request.readyState === 4) {
+                that.ready = true;
+
+                // if (request.status === 200) {
+                //     that.ready = true;
+                // } else {
+                //     that.loadFailed = true;
+                // }
+                console.log("Fetch");
+                var audioData = request.response;
+                //解码
+                that.audioContext.decodeAudioData(audioData, function(buffer) {
+                            that.source.buffer = buffer;
+                            console.log(buffer.duration);//资源长度
+                            that.source.connect(that.audioContext.destination);
+                            // 将audioBufferSouceNode连接到audioContext.destination，
+                            // 这个AudioContext的destination也就相关于speaker（扬声器）。
+                            that.source.loop = that.config.loop||false;
+     
+                        },
+                        function(e){"Error with decoding audio data" + e.err});
+            }
+        };
+   
+        request.send();
+    },
+    play: function () {
+        var that = this;
+        that.source.start();
+        that.playing = true;
+        var timer = setInterval(function () {
+            that.analyser.getByteFrequencyData(that.frequency);
+            if (that.source.buffer){
+                if (that.audioContext.currentTime>that.source.buffer.duration){
+                    that.source.stop(0);
+                    that.playing = false;
+                    clearInterval(timer);
+                }
+            }
+        },100);
+    },
+    stop: function () {
+        var that = this;
+        that.source.stop(0);
+        that.playing = false;
+    }
+};
+
+var v=new Visualizer({
+    url:"test.mp3",//audio地址 没有写兼容跨域的方法，所以不能跨域
+    loop:false//是否循环
+});
+v.init();
+// setInterval(function () {
+//     if(v.ready){
+//           console.log("ready!");
+//     } else if(v.loadFailed){
+//           console.log("加载失败");
+//     }
+//     if (v.playing){ //playing判断是否在播放
+//         console.log(v.frequency);//frequency是长度为16的频率值数组
+//     }
+// },100);

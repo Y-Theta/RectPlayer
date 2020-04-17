@@ -2,8 +2,16 @@
 @coverwidth: 84px;
 @collapsewidth: 16px;
 @flexwidth: 324px;
+@xoffset: @collapsewidth + @coverwidth - @flexwidth;
 
-@listheight: 144px;
+@listheight: 182px;
+@listcontrolwidth: 32px;
+@listscrllbarwidth: 12px;
+@listitemheight: 30px;
+@listitemheader: 32px;
+@listitemulmargin: 12px;
+@listitemselect: 2px;
+@yoffset: @listheight - @coverheight;
 
 @trackpanelthickness: 12px;
 @trackthickness: 8px;
@@ -13,11 +21,12 @@
 @timewidth: 72px;
 
 @btnsize: 32px;
+
 @btn_volume: @btnsize + 16px;
 @btn_mode: @btnsize + 4px;
 @btn_ol: @btnsize - 20px;
+@btn_listctl: @btnsize;
 @btnpadding: 4px;
-@xoffset: @collapsewidth + @coverwidth - @flexwidth;
 
 @coverbtn: #ffffffaa;
 @coverbtnhover: darken(@coverbtn, 20%);
@@ -108,13 +117,13 @@
 }
 
 .no-interact {
-    -moz-user-select: none;
-    -o-user-select: none;
-    -khtml-user-select: none;
-    -webkit-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 
 .flex-column {
   .flex-layout-column();
@@ -137,13 +146,25 @@
 // #endregion
 
 // #region Animations
-.keyframes(toggle_panel_on, {0% {transform: translateX(@xoffset) ;} 100% {transform: translateX(@coverwidth) ;}});
+.keyframes (toggle_panel_on, {0% {transform: translateX(@xoffset) ;} 100% {transform: translateX(@coverwidth) ;}});
 
-.keyframes(toggle_panel_off, {0% {transform: translateX(@coverwidth) ;} 100% {transform: translateX(@xoffset) ;}});
+.keyframes (toggle_panel_off, {0% {transform: translateX(@coverwidth) ;} 100% {transform: translateX(@xoffset) ;}});
 
 .keyframes (clip_on, {0% {width: @collapsewidth + @coverwidth;} 100% {width: @flexwidth + @coverwidth;}});
 
 .keyframes (clip_off, {0% {width: @flexwidth + @coverwidth;} 100% {width: @collapsewidth + @coverwidth;}});
+
+.keyframes (toggle_list_on, {0% {transform: translateY(@yoffset) ;} 100% {transform: translateY(-@coverheight) ;}});
+
+.keyframes (toggle_list_off, {0% {transform: translateY(-@coverheight) ;} 100% {transform: translateY(@yoffset) ;}});
+
+.keyframes (list_clip_on, {0% {height: @coverheight;} 100% {height: @coverheight + @listheight;width: @flexwidth + 1;}});
+
+.keyframes
+  (
+    list_clip_off,
+    {0% {height: @coverheight + @listheight;width: @flexwidth + 1;} 100% {height: @coverheight;width: 0;}}
+  );
 // #endregion
 
 // #region @PlayerStyle
@@ -161,8 +182,10 @@
   display: block;
 
   svg {
-    width: @btnsize;
-    height: @btnsize;
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
     stroke: none;
     fill: @btn-normal;
   }
@@ -187,6 +210,10 @@
     .noneMP();
     box-sizing: border-box;
     display: block;
+  }
+
+  .flex-spring {
+    flex-grow: 1;
   }
 
   .cover {
@@ -429,6 +456,26 @@
       }
     }
 
+    .fore:extend(.svgbtn all) {
+      right: @trackpadding + 2 * @btn_volume;
+      bottom: @trackbottom + @trackpanelthickness + 3 * @btnpadding + 2;
+
+      svg {
+        width: @btn_mode;
+        height: @btn_mode;
+      }
+    }
+
+    .prve:extend(.svgbtn all) {
+      right: @trackpadding + 3 * @btn_volume;
+      bottom: @trackbottom + @trackpanelthickness + 3 * @btnpadding + 2;
+
+      svg {
+        width: @btn_mode;
+        height: @btn_mode;
+      }
+    }
+
     .openlist:extend(.svgbtn all) {
       right: @btnpadding - 2;
       top: @btnpadding - 2;
@@ -440,19 +487,152 @@
     }
   }
 
+  .listclip {
+    z-index: 80;
+    position: absolute;
+    display: block;
+    height: @coverheight;
+    left: @coverwidth - 1;
+    bottom: 0;
+    overflow: hidden;
+  }
+
   .list:extend(.flex-row) {
-    display: none;
+    z-index: 81;
     position: absolute;
     width: @flexwidth + 1;
     height: @listheight;
-    bottom: @coverheight;
-    left: @coverwidth - 1;
     border: 1px solid black;
     border-bottom: none;
+    bottom: 0;
+    .transform(~"translateY(@{yoffset})");
 
-    .lcontrol {
-      width: 32px;
-      border-right: 1px solid black;
+    .lcontrol:extend(.flex-column) {
+      z-index: 82;
+      position: relative;
+      flex-basis: @listcontrolwidth;
+      border-right: 1px solid #ccc;
+
+      .listadd:extend(.svgbtn all) {
+        position: relative;
+        flex-basis: @btn_listctl;
+      }
+
+      .listremove:extend(.svgbtn all) {
+        position: relative;
+        flex-basis: @btn_listctl;
+      }
+
+      .about:extend(.svgbtn all) {
+        position: relative;
+        flex-basis: @btn_listctl;
+      }
+    }
+
+    .detail {
+      overflow-y: scroll;
+      overflow-x: hidden;
+      display: block;
+      flex-grow: 1;
+      border: none;
+
+      li:extend(.flex-row) {
+        position: relative;
+        height: @listitemheight;
+        width: 100%;
+
+        p {
+          display: block;
+          margin: 0 4px;
+          font-size: 8pt;
+
+          &:nth-child(1) {
+            flex-basis: @listitemselect;
+            margin: 4px 0;
+            background-color: #00000040;
+          }
+
+          &:nth-child(2) {
+            .no-interact();
+            text-align: center;
+            padding-top: 6px;
+            flex-basis: @listitemheader;
+          }
+
+          &:nth-child(3) {
+            .no-interact();
+            padding-top: 6px;
+            flex-grow: 1;
+          }
+
+          &:nth-child(4) {
+            flex-basis: @listitemselect;
+            margin: 4px 0;
+            background-color: #00000040;
+          }
+
+          &:nth-child(5) {
+            display: block;
+            position: absolute;
+            width: ~"calc(100% - 2 * @{listitemulmargin})";
+            margin-left: @listitemulmargin;
+            margin-right: @listitemulmargin;
+            bottom: 0;
+            border-bottom: 1px solid #00000040;
+          }
+        }
+
+        &.selected {
+            background-color: #00000020;
+          p {
+            &:nth-child(1) {
+              flex-basis: @listitemselect + 2;
+            }
+            &:nth-child(4) {
+              flex-basis: @listitemselect + 2;
+            }
+          }
+        }
+
+        &.playing {
+            background-color: #00000020;
+          p {
+            &:nth-child(1) {
+              flex-basis: @listitemselect + 2;
+            }
+            &:nth-child(4) {
+              flex-basis: @listitemselect + 2;
+            }
+            &:nth-child(2) {
+              &::after {
+                @clipsize: @listitemheight - 12px;
+                content: " ";
+                display: block;
+                position: absolute;
+                width: @clipsize;
+                height: @clipsize;
+                left: 0;
+                left: @listitemselect + 6px + (@listitemheader - @clipsize) /2;
+                top: 6px;
+                border-radius: @clipsize / 2 @clipsize / 2;
+                background-color: #00000040;
+              }
+            }
+          }
+        }
+      }
+
+      &::-webkit-scrollbar {
+        width: @listscrllbarwidth;
+      }
+
+      &::-webkit-scrollbar-track {
+        border-left: 1px solid #ccc;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #eaeaea;
+      }
     }
   }
 
@@ -480,16 +660,30 @@
     }
   }
 
+  &.list-on {
+    .listclip {
+      .anime(~"list_clip_on 0s steps(1) forwards");
+    }
+
+    .list {
+      .anime(~"toggle_list_on .24s ease-in forwards");
+    }
+  }
+
+  &.list-off {
+    .listclip {
+      .anime(~"list_clip_off .24s steps(1) forwards");
+    }
+
+    .list {
+      .anime(~"toggle_list_off .24s ease-in forwards");
+    }
+  }
+
   &.panel-on {
     // .handle {
     //   border-left: 1px solid black;
     // }
-
-    &.list-on {
-      .list {
-        display: flex;
-      }
-    }
 
     .cpanelclip {
       .anime(~"clip_on 0s steps(1) forwards");

@@ -62,7 +62,8 @@ class Point {
 enum PlayMode {
     Random,
     LoopOne,
-    LoopList
+    LoopList,
+    List,
 }
 
 export { PlayList, Track, Author, Avatar, RectPlayerOption, Point, PlayMode }

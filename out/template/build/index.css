@@ -8,7 +8,8 @@
   user-select: none;
 }
 
-.flex-column {
+.flex-column,
+#rectPlayer .list .lcontrol {
   display: flex;
   flex-direction: column;
   justify-content: start;
@@ -17,7 +18,8 @@
 .flex-row,
 #rectPlayer .cpanel,
 #rectPlayer .control .track,
-#rectPlayer .list {
+#rectPlayer .list,
+#rectPlayer .list .detail li {
   display: flex;
   flex-direction: row;
   justify-content: start;
@@ -103,6 +105,92 @@
   }
 }
 
+@-webkit-keyframes toggle_list_on {
+  0% {
+    transform: translateY(98px);
+  }
+
+  100% {
+    transform: translateY(-84px);
+  }
+}
+
+@keyframes toggle_list_on {
+  0% {
+    transform: translateY(98px);
+  }
+
+  100% {
+    transform: translateY(-84px);
+  }
+}
+
+@-webkit-keyframes toggle_list_off {
+  0% {
+    transform: translateY(-84px);
+  }
+
+  100% {
+    transform: translateY(98px);
+  }
+}
+
+@keyframes toggle_list_off {
+  0% {
+    transform: translateY(-84px);
+  }
+
+  100% {
+    transform: translateY(98px);
+  }
+}
+
+@-webkit-keyframes list_clip_on {
+  0% {
+    height: 84px;
+  }
+
+  100% {
+    height: 266px;
+    width: 325px;
+  }
+}
+
+@keyframes list_clip_on {
+  0% {
+    height: 84px;
+  }
+
+  100% {
+    height: 266px;
+    width: 325px;
+  }
+}
+
+@-webkit-keyframes list_clip_off {
+  0% {
+    height: 266px;
+    width: 325px;
+  }
+
+  100% {
+    height: 84px;
+    width: 0;
+  }
+}
+
+@keyframes list_clip_off {
+  0% {
+    height: 266px;
+    width: 325px;
+  }
+
+  100% {
+    height: 84px;
+    width: 0;
+  }
+}
+
 .rpele .text,
 #rectPlayer .control .name,
 #rectPlayer .control .author,
@@ -115,7 +203,12 @@
 .svgbtn,
 #rectPlayer .control .volume,
 #rectPlayer .control .playmode,
-#rectPlayer .control .openlist {
+#rectPlayer .control .fore,
+#rectPlayer .control .prve,
+#rectPlayer .control .openlist,
+#rectPlayer .list .lcontrol .listadd,
+#rectPlayer .list .lcontrol .listremove,
+#rectPlayer .list .lcontrol .about {
   position: absolute;
   display: block;
 }
@@ -123,9 +216,16 @@
 .svgbtn svg,
 #rectPlayer .control .volume svg,
 #rectPlayer .control .playmode svg,
-#rectPlayer .control .openlist svg {
-  width: 32px;
-  height: 32px;
+#rectPlayer .control .fore svg,
+#rectPlayer .control .prve svg,
+#rectPlayer .control .openlist svg,
+#rectPlayer .list .lcontrol .listadd svg,
+#rectPlayer .list .lcontrol .listremove svg,
+#rectPlayer .list .lcontrol .about svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
   stroke: none;
   fill: #8c8c8c;
 }
@@ -133,7 +233,12 @@
 .svgbtn:hover svg,
 #rectPlayer .control .volume:hover svg,
 #rectPlayer .control .playmode:hover svg,
-#rectPlayer .control .openlist:hover svg {
+#rectPlayer .control .fore:hover svg,
+#rectPlayer .control .prve:hover svg,
+#rectPlayer .control .openlist:hover svg,
+#rectPlayer .list .lcontrol .listadd:hover svg,
+#rectPlayer .list .lcontrol .listremove:hover svg,
+#rectPlayer .list .lcontrol .about:hover svg {
   fill: #4c4c4c;
 }
 
@@ -153,6 +258,10 @@
   padding: 0;
   box-sizing: border-box;
   display: block;
+}
+
+#rectPlayer .flex-spring {
+  flex-grow: 1;
 }
 
 #rectPlayer .cover {
@@ -390,6 +499,26 @@
   display: block;
 }
 
+#rectPlayer .control .fore {
+  right: 104px;
+  bottom: 30px;
+}
+
+#rectPlayer .control .fore svg {
+  width: 36px;
+  height: 36px;
+}
+
+#rectPlayer .control .prve {
+  right: 152px;
+  bottom: 30px;
+}
+
+#rectPlayer .control .prve svg {
+  width: 36px;
+  height: 36px;
+}
+
 #rectPlayer .control .openlist {
   right: 2px;
   top: 2px;
@@ -400,20 +529,165 @@
   height: 12px;
 }
 
+#rectPlayer .listclip {
+  z-index: 80;
+  position: absolute;
+  display: block;
+  height: 84px;
+  left: 83px;
+  bottom: 0;
+  overflow: hidden;
+}
+
 #rectPlayer .list {
-  display: none;
+  z-index: 81;
   position: absolute;
   width: 325px;
-  height: 144px;
-  bottom: 84px;
-  left: 83px;
+  height: 182px;
   border: 1px solid black;
   border-bottom: none;
+  bottom: 0;
+  transform: translateY(98px);
+  -ms-transform: translateY(98px);
+  -moz-transform: translateY(98px);
+  -webkit-transform: translateY(98px);
+  -o-transform: translateY(98px);
 }
 
 #rectPlayer .list .lcontrol {
-  width: 32px;
-  border-right: 1px solid black;
+  z-index: 82;
+  position: relative;
+  flex-basis: 32px;
+  border-right: 1px solid #ccc;
+}
+
+#rectPlayer .list .lcontrol .listadd {
+  position: relative;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .lcontrol .listremove {
+  position: relative;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .lcontrol .about {
+  position: relative;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .detail {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  display: block;
+  flex-grow: 1;
+  border: none;
+}
+
+#rectPlayer .list .detail li {
+  position: relative;
+  height: 30px;
+  width: 100%;
+}
+
+#rectPlayer .list .detail li p {
+  display: block;
+  margin: 0 4px;
+  font-size: 8pt;
+}
+
+#rectPlayer .list .detail li p:nth-child(1) {
+  flex-basis: 2px;
+  margin: 4px 0;
+  background-color: #00000040;
+}
+
+#rectPlayer .list .detail li p:nth-child(2) {
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  text-align: center;
+  padding-top: 6px;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .detail li p:nth-child(3) {
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  padding-top: 6px;
+  flex-grow: 1;
+}
+
+#rectPlayer .list .detail li p:nth-child(4) {
+  flex-basis: 2px;
+  margin: 4px 0;
+  background-color: #00000040;
+}
+
+#rectPlayer .list .detail li p:nth-child(5) {
+  display: block;
+  position: absolute;
+  width: calc(100% - 2 * 12px);
+  margin-left: 12px;
+  margin-right: 12px;
+  bottom: 0;
+  border-bottom: 1px solid #00000040;
+}
+
+#rectPlayer .list .detail li.selected {
+  background-color: #00000020;
+}
+
+#rectPlayer .list .detail li.selected p:nth-child(1) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.selected p:nth-child(4) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.playing {
+  background-color: #00000020;
+}
+
+#rectPlayer .list .detail li.playing p:nth-child(1) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.playing p:nth-child(4) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.playing p:nth-child(2)::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 0;
+  left: 15px;
+  top: 6px;
+  border-radius: 9px 9px;
+  background-color: #00000040;
+}
+
+#rectPlayer .list .detail::-webkit-scrollbar {
+  width: 12px;
+}
+
+#rectPlayer .list .detail::-webkit-scrollbar-track {
+  border-left: 1px solid #ccc;
+}
+
+#rectPlayer .list .detail::-webkit-scrollbar-thumb {
+  background: #eaeaea;
 }
 
 #rectPlayer.play .cover:hover .ccontrol .btn:nth-child(2) {
@@ -424,8 +698,24 @@
   display: block;
 }
 
-#rectPlayer.panel-on.list-on .list {
-  display: flex;
+#rectPlayer.list-on .listclip {
+  animation: list_clip_on 0s steps(1) forwards;
+  -webkit-animation: list_clip_on 0s steps(1) forwards;
+}
+
+#rectPlayer.list-on .list {
+  animation: toggle_list_on .24s ease-in forwards;
+  -webkit-animation: toggle_list_on .24s ease-in forwards;
+}
+
+#rectPlayer.list-off .listclip {
+  animation: list_clip_off .24s steps(1) forwards;
+  -webkit-animation: list_clip_off .24s steps(1) forwards;
+}
+
+#rectPlayer.list-off .list {
+  animation: toggle_list_off .24s ease-in forwards;
+  -webkit-animation: toggle_list_off .24s ease-in forwards;
 }
 
 #rectPlayer.panel-on .cpanelclip {
