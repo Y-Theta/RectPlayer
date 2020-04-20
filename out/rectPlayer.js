@@ -96,68 +96,105 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ({
 
-/***/ "./RectPlayer/PlayerCore.ts":
+/***/ "./RectPlayer/PlayerItem.ts":
 /*!**********************************!*\
-  !*** ./RectPlayer/PlayerCore.ts ***!
+  !*** ./RectPlayer/PlayerItem.ts ***!
   \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(__extends) {
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 播放器单元
+ */
+var PlayerItem = /** @class */ (function () {
+    function PlayerItem() {
+    }
+    return PlayerItem;
+}());
+exports.PlayerItem = PlayerItem;
+
+
+/***/ }),
+
+/***/ "./RectPlayer/PlayerModel.ts":
+/*!***********************************!*\
+  !*** ./RectPlayer/PlayerModel.ts ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 播放列表信息
+ * */
+var PlayList = /** @class */ (function () {
+    function PlayList() {
+    }
+    return PlayList;
+}());
+exports.PlayList = PlayList;
+/**
+ * 歌曲信息
+ * */
+var Track = /** @class */ (function () {
+    function Track() {
+    }
+    return Track;
+}());
+exports.Track = Track;
+/**
+ * 歌手信息
+ * */
+var Author = /** @class */ (function () {
+    function Author() {
+    }
+    return Author;
+}());
+exports.Author = Author;
+/**
+ * 封面信息
+ * */
+var Avatar = /** @class */ (function () {
+    function Avatar() {
+    }
+    return Avatar;
+}());
+exports.Avatar = Avatar;
 /**
  *
- * @Y_Theta http://blog.y-theta.cn
- *
- * PlayerCoreContract
+ * */
+var RectPlayerOption = /** @class */ (function () {
+    function RectPlayerOption() {
+    }
+    return RectPlayerOption;
+}());
+exports.RectPlayerOption = RectPlayerOption;
+/**
  *
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
-var PlayerCore = /** @class */ (function () {
-    function PlayerCore() {
+var Point = /** @class */ (function () {
+    function Point() {
     }
-    return PlayerCore;
+    return Point;
 }());
-exports.PlayerCore = PlayerCore;
-/** 网易云音乐资源 */
-var NeteaseCore = /** @class */ (function (_super) {
-    __extends(NeteaseCore, _super);
-    function NeteaseCore() {
-        var _this = _super.call(this) || this;
-        _this.GetPlaylist = function (id) {
-            if (typeof (id) === "number")
-                return _this.getneteasePlayListbyID(id);
-            return [];
-        };
-        return _this;
-    }
-    NeteaseCore.prototype.getneteasePlayListbyID = function (id) {
-        Utils_1.Utils.Ajax({
-            url: "",
-            success: function (data) {
-            },
-            failed: function (status) {
-            },
-            prepare: function () {
-            }
-        });
-        return [];
-    };
-    return NeteaseCore;
-}(PlayerCore));
-exports.NeteaseCore = NeteaseCore;
-/** 本地文件资源 */
-var LocalCore = /** @class */ (function (_super) {
-    __extends(LocalCore, _super);
-    function LocalCore() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return LocalCore;
-}(PlayerCore));
-exports.LocalCore = LocalCore;
+exports.Point = Point;
+/**
+ *
+ */
+var PlayMode;
+(function (PlayMode) {
+    PlayMode["normal"] = "normal";
+    PlayMode["repeat"] = "repeat";
+    PlayMode["repeatone"] = "repeatone";
+    PlayMode["random"] = "random";
+})(PlayMode || (PlayMode = {}));
+exports.PlayMode = PlayMode;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./RectPlayer/extends.js */ "./RectPlayer/extends.js")["__extends"]))
 
 /***/ }),
 
@@ -181,23 +218,31 @@ exports.LocalCore = LocalCore;
 Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
 var RectplayerTemplateResolver_1 = __webpack_require__(/*! ./RectplayerTemplateResolver */ "./RectPlayer/RectplayerTemplateResolver.ts");
-var PlayerCore_1 = __webpack_require__(/*! ./PlayerCore */ "./RectPlayer/PlayerCore.ts");
+var SourceCore_1 = __webpack_require__(/*! ./SourceCore */ "./RectPlayer/SourceCore.ts");
 var RectPlayer = /** @class */ (function () {
     function RectPlayer(option) {
         this._loaded = false;
-        this._core = null;
+        this._srcResolver = null;
         this._templateResolver = null;
+        this._playerControl = null;
+        this._listuid = null;
+        this._playlist = null;
+        this._async = true;
         Utils_1.Utils._enablelog = option.EnableLog || false;
         this._scriptcache = new Map();
         this._templateResolver = option.Reslover || new RectplayerTemplateResolver_1.DefaultTemplateResolver();
+        this._async = option.Async == null ? true : option.Async;
+        this._listuid = option.PlaylistId;
+        this._srcResolver = new SourceCore_1.NeteaseCore();
         this.loadDependenceAsync();
         Utils_1.Utils.Log("\\ RectPlayer  1.0.0 \n\\ @Y_Theta \n\\ http:\\\\blog.y-theta.com \n\\ Starting ....");
     }
     /**
-     *
+     * 获取播放列表
      */
     RectPlayer.prototype.getPlayList = function (id) {
-        return this._core.GetPlaylist(id);
+        if (this._srcResolver)
+            this._srcResolver.GetPlaylist(id);
     };
     /**
      * 异步加载依赖文件
@@ -206,8 +251,7 @@ var RectPlayer = /** @class */ (function () {
         var _this = this;
         var dependencefile = [
             Utils_1.Utils.Path() + "/less.min.js",
-            Utils_1.Utils.Path() + "/xml-js.min.js",
-            Utils_1.Utils.Path("resource") + "/javascript/lib/anime.min.js",
+            Utils_1.Utils.Path("resource") + "/javascript/lib/anime.min.js"
         ];
         dependencefile.forEach(function (element) {
             _this._scriptcache.set(element, null);
@@ -248,12 +292,12 @@ var RectPlayer = /** @class */ (function () {
      */
     RectPlayer.prototype.SwitchMode = function (mode) {
         this._mode = mode;
-        this._core = null;
+        this._srcResolver = null;
         if (this._mode === "Netease") {
-            this._core = new PlayerCore_1.NeteaseCore();
+            this._srcResolver = new SourceCore_1.NeteaseCore();
         }
         else if (this._mode === "LocalFile") {
-            this._core = new PlayerCore_1.LocalCore();
+            this._srcResolver = new SourceCore_1.LocalCore();
         }
     };
     /**
@@ -265,12 +309,38 @@ var RectPlayer = /** @class */ (function () {
          */
         this.resolve();
     };
+    /**
+     *
+     */
     RectPlayer.prototype.resolve = function () {
         var _this = this;
         if (!this._loaded) {
             setTimeout(this.resolve.bind(this), 200);
         }
         else {
+            // 请求样式页
+            Utils_1.Utils.Ajax({
+                async: true,
+                url: Utils_1.Utils.Path() + "/template/style.less",
+                prepare: function () {
+                    Utils_1.Utils.Log("GetTemplate Less !");
+                },
+                success: function (data) {
+                    less.render(data, function (e, o) {
+                        var style = document.createElement("style");
+                        style.type = "text/css";
+                        style.innerHTML = o.css;
+                        document
+                            .getElementsByTagName("head")
+                            .item(0)
+                            .appendChild(style);
+                    });
+                },
+                failed: function () {
+                    Utils_1.Utils.Log("Faild !");
+                }
+            });
+            //请求模板
             Utils_1.Utils.Ajax({
                 async: true,
                 url: Utils_1.Utils.Path() + "/template/Template.xml",
@@ -278,14 +348,30 @@ var RectPlayer = /** @class */ (function () {
                     Utils_1.Utils.Log("GetTemplate !");
                 },
                 success: function (data) {
-                    var temp = _this._templateResolver.ResloveTemplate(data, null);
-                    document.body.appendChild(temp);
+                    _this._async ? _this.loadlistAsync(data) : _this.loadlist(data);
                 },
                 failed: function () {
                     Utils_1.Utils.Log("Faild !");
-                },
+                }
             });
         }
+    };
+    RectPlayer.prototype.loadlist = function (data) {
+        var temp = this._templateResolver.ResloveTemplate(data);
+        document.body.appendChild(temp.View);
+        this._playerControl = temp.Control;
+    };
+    RectPlayer.prototype.loadlistAsync = function (data) {
+        var temp = this._templateResolver.ResloveTemplate(data);
+        document.body.appendChild(temp.View);
+        this._playerControl = temp.Control;
+        this.getPlayList(this._listuid);
+        setTimeout(this.rendertemplate.bind(this), 100);
+    };
+    RectPlayer.prototype.rendertemplate = function () {
+        this._srcResolver.Loaded ?
+            (this._playlist = this._srcResolver.Playlist, this._templateResolver.RenderTemplate(this._playlist)) :
+            setTimeout(this.rendertemplate.bind(this), 100);
     };
     return RectPlayer;
 }());
@@ -309,32 +395,310 @@ exports.RectPlayer = RectPlayer;
  *
  * */
 Object.defineProperty(exports, "__esModule", { value: true });
+var PlayerModel_1 = __webpack_require__(/*! ./PlayerModel */ "./RectPlayer/PlayerModel.ts");
+var PlayerItem_1 = __webpack_require__(/*! ./PlayerItem */ "./RectPlayer/PlayerItem.ts");
+var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
 /**
  * 默认的播放器样式解析器
  * 根据模板中定义的关键字解析模板
  * */
 var DefaultTemplateResolver = /** @class */ (function () {
     function DefaultTemplateResolver() {
+        this._playerelement = null;
+        this._listtemplate = null;
+        this._liststatus = false;
+        this._panelstatus = false;
+        this._mute = false;
+        this._playing = true;
+        this._songid = -1;
+        this._playerctl = new Map();
+        this._volume = 0;
+        this._volumebak = 0;
+        this._playmode = PlayerModel_1.PlayMode.normal;
+        this._playmodeloop = [PlayerModel_1.PlayMode.normal, PlayerModel_1.PlayMode.repeat, PlayerModel_1.PlayMode.repeatone, PlayerModel_1.PlayMode.random];
+        this._playlist = null;
     }
+    //#region Interface Function
+    DefaultTemplateResolver.prototype.Play = function (id) { };
+    DefaultTemplateResolver.prototype.Pause = function () { };
+    DefaultTemplateResolver.prototype.Resume = function () { };
+    DefaultTemplateResolver.prototype.Next = function () { };
+    DefaultTemplateResolver.prototype.Prve = function () { };
+    DefaultTemplateResolver.prototype.Playlist = function (action) { };
+    DefaultTemplateResolver.prototype.Add = function (song) { };
+    DefaultTemplateResolver.prototype.Remove = function (song) { };
+    DefaultTemplateResolver.prototype.SwitchMode = function (mode) {
+        this.switchmode(mode);
+    };
+    DefaultTemplateResolver.prototype.About = function () { };
+    //#endregion
     /**
      * 解析播放器模板
      * @param oritemplate  模板html
      * @param data         播放列表数据
      */
-    DefaultTemplateResolver.prototype.ResloveTemplate = function (oritemplate, data) {
+    DefaultTemplateResolver.prototype.ResloveTemplate = function (oritemplate) {
         //Utils.Log(XML.xml2js(oritemplate));
-        var player = document.createElement("div");
-        var listitem = new Array();
+        this._playerelement = document.createElement("div");
+        this._playerelement.id = "rectPlayer";
         var result = /<player>([\s\S]*?)<\/player>[\s\S]*?<listitem>([\s\S]*?)<\/listitem>/im.exec(oritemplate);
         var playerdom = this.parseDom(result[1]);
-        var listdom = this.parseDom(result[2]);
-        var audiosrc = playerdom.querySelector("#src");
-        audiosrc.classList.add("rect-audio");
-        if (data != null)
-            data.tracks.forEach(function (v, i, ins) {
+        this._listtemplate = result[2];
+        //#region GetElementref
+        this.loadcontrol(playerdom);
+        //#endregion
+        //#region 开关控制
+        this.$g("ctl-play").onclick = this.playpause.bind(this);
+        this.pause();
+        this.$g("openpanel").onclick = this.openctlpanel.bind(this);
+        this.$g("openlist").onclick = this.openlist.bind(this);
+        this.$g("volume-track").onclick = this.volumetrackclick.bind(this);
+        this.$g("ctl-mute").onclick = this.volumeclick.bind(this);
+        this.$g("volume").addEventListener("DOMMouseScroll", this.volumescroll.bind(this), { passive: true });
+        this.$g("volume").onmousewheel = this.volumescroll.bind(this);
+        this.$g("mode").addEventListener("click", this.setmode.bind(this));
+        this.switchmode(this._playmode);
+        //#endregion
+        this._playerelement.append(playerdom);
+        var playeritem = new PlayerItem_1.PlayerItem();
+        playeritem.View = this._playerelement;
+        playeritem.Control = this;
+        this._playerctl.forEach(function (v) {
+            v.id = null;
+        });
+        return playeritem;
+    };
+    DefaultTemplateResolver.prototype.RenderTemplate = function (data) {
+        var _this = this;
+        this._playlist = data;
+        this._playlist &&
+            this._playlist.tracks.forEach(function (v, i, ins) {
+                var listitem = _this.parseDom(_this._listtemplate);
+                var liid = listitem.querySelector("#id");
+                liid.innerHTML = "" + i;
+                var liname = listitem.querySelector("#info");
+                liname.innerHTML = "" + v.name + (v.ar[0] && "-" + v.ar[0].name);
+                _this.$g("list-detail").appendChild(listitem.childNodes[0]);
             });
-        player.append(playerdom);
-        return player;
+        Utils_1.Utils.Log(this._playlist.tracks[0].al.url);
+        this._songid = 0;
+        this.updateUI(this._songid);
+    };
+    /**
+     *
+     */
+    DefaultTemplateResolver.prototype.updateUI = function (id) {
+        this.$g("cover-avatar").style.backgroundImage = "url(" + this._playlist.tracks[id].al.url + ")";
+        this.$g("source").setAttribute("src", this._playlist.tracks[id].src);
+        this.$g("name").innerHTML = this._playlist.tracks[id].name;
+        this.$g("author").innerHTML = this._playlist.tracks[id].ar[0].name;
+    };
+    //#region 播放列表/控制面板
+    DefaultTemplateResolver.prototype.openlist = function (e) {
+        this._liststatus = !this._liststatus;
+        if (this._liststatus) {
+            this.switchElementStatus(this._playerelement, "list-on", "list-off");
+        }
+        else {
+            this.switchElementStatus(this._playerelement, "list-off", "list-on");
+        }
+    };
+    DefaultTemplateResolver.prototype.openctlpanel = function (e) {
+        var _this = this;
+        this._panelstatus = !this._panelstatus;
+        if (this._panelstatus) {
+            this.switchElementStatus(this._playerelement, "panel-on", "panel-off");
+        }
+        else {
+            if (this._playerelement.classList.contains("list-on")) {
+                this._liststatus = false;
+                this.switchElementStatus(this._playerelement, "list-off", "list-on");
+                setTimeout(function (that) {
+                    that.switchElementStatus(_this._playerelement, "panel-off", "panel-on");
+                }, 240, this);
+            }
+            else {
+                this.switchElementStatus(this._playerelement, "panel-off", "panel-on");
+            }
+        }
+    };
+    //#endregion
+    //#region 音量调整
+    /**
+     * 静音
+     */
+    DefaultTemplateResolver.prototype.volumeclick = function (e) {
+        this.setMute(!this._mute);
+        this.setVolume(this._volume);
+    };
+    /**
+     * 音量单击调整
+     */
+    DefaultTemplateResolver.prototype.volumetrackclick = function (e) {
+        var clip = this.$g("volume").getBoundingClientRect();
+        //   console.log(e, clip);
+        var cw = clip.width / 2;
+        var ch = clip.height / 2;
+        var x1 = e.clientX - clip.x, y1 = e.clientY - clip.y;
+        var angle = this.getcrosslineAngle({ x: cw, y: 0 }, { x: x1, y: y1 }, { x: cw, y: ch });
+        this._mute = false;
+        this._volume = (angle / 360) * 6000;
+        this.setVolume(this._volume);
+    };
+    /**
+     * 音量滚动调整
+     */
+    DefaultTemplateResolver.prototype.volumescroll = function (e) {
+        e = e || window.event;
+        var data;
+        if (e.wheelDelta) {
+            //IE/Opera/Chrome
+            data = e.wheelDelta;
+        }
+        else if (e.detail) {
+            //Firefox
+            data = e.detail;
+        }
+        this._mute && this.setMute(false);
+        this._volume += data;
+        this._volume = this._volume < 6000 ? (this._volume < 0 ? 0 : this._volume) : 6000;
+        this.setVolume(this._volume);
+    };
+    /**
+     * 设置音量
+     */
+    DefaultTemplateResolver.prototype.setVolume = function (v) {
+        var newpath = this.parsePercent(v / 6000, { x: 32, y: 32 }, 24);
+        this.$g("volume-path").setAttribute("d", newpath);
+        var volume = this.$g("volume");
+        if (this._volume == 0) {
+            volume.classList.add("mute");
+        }
+        else {
+            volume.classList.contains("mute") ? volume.classList.remove("mute") : null;
+        }
+        this.$g("source").volume = v / 6000;
+    };
+    /**
+     * 设置静音
+     */
+    DefaultTemplateResolver.prototype.setMute = function (flag) {
+        this._mute = flag;
+        Utils_1.Utils.Log("Mute :" + flag);
+        if (flag) {
+            this._volumebak = this._volume;
+            this._volume = 0;
+        }
+        else {
+            this._volume = this._volumebak;
+        }
+        this.$g("source").volume = this._volume / 6000;
+    };
+    //#endregion
+    //#region 设置播放模式
+    DefaultTemplateResolver.prototype.setmode = function () {
+        var nowindex = this._playmodeloop.indexOf(this._playmode);
+        nowindex = (nowindex + 1) % this._playmodeloop.length;
+        this.switchmode(this._playmodeloop[nowindex]);
+    };
+    DefaultTemplateResolver.prototype.switchmode = function (mode) {
+        Utils_1.Utils.Log([this._playmode, mode]);
+        this.switchElementStatus(this.$g("mode"), mode, this._playmode);
+        this._playmode = mode;
+    };
+    //#endregion
+    //#region 播放暂停控制
+    DefaultTemplateResolver.prototype.playpause = function (e) {
+        this._playing ? this.pause() : this.resume();
+    };
+    DefaultTemplateResolver.prototype.resume = function () {
+        if (this._playing)
+            return;
+        this._playing = true;
+        this.switchElementStatus(this._playerelement, "play", "pause");
+        this.$g("source").play();
+    };
+    DefaultTemplateResolver.prototype.pause = function () {
+        if (!this._playing)
+            return;
+        this._playing = false;
+        this.switchElementStatus(this._playerelement, "pause", "play");
+        this.$g("source").pause();
+    };
+    DefaultTemplateResolver.prototype.play = function (id) {
+        var _this = this;
+        if (id < 0)
+            return;
+        this._songid = id;
+        var song = null;
+        this._playlist.tracks.forEach(function (t, i) {
+            if (t.id == _this._songid)
+                song = t;
+        });
+        if (song != null) {
+            this.$g("name").innerHTML = song.name;
+            this.$g("author").innerHTML = song.ar[0] ? song.ar[0].name : "未知作者";
+        }
+        this._playing = true;
+        this.switchElementStatus(this._playerelement, "play", "pause");
+    };
+    DefaultTemplateResolver.prototype.prve = function () {
+        if (this._songid < 0)
+            return;
+        this._songid = this._songid > 0 ? this._songid - 1 : 0;
+        this.play(this._songid);
+    };
+    DefaultTemplateResolver.prototype.next = function () {
+        if (this._songid < 0)
+            return;
+        this._songid =
+            this._songid < this._playlist.tracks.length - 1 ? this._songid + 1 : this._playlist.tracks.length - 1;
+        this.play(this._songid);
+    };
+    //#endregion
+    /**
+     * 装填控件字典
+     * @param rootdom
+     */
+    DefaultTemplateResolver.prototype.loadcontrol = function (rootdom) {
+        var _this = this;
+        this._playerctl = this._playerctl || new Map();
+        var controldic = [
+            "list-detail",
+            "source",
+            "cover-avatar",
+            "cover-resolve",
+            "cover-static",
+            "ctl-play",
+            "name",
+            "author",
+            "track-loding",
+            "track-pos",
+            "track-thumb",
+            "time-now",
+            "volume",
+            "ctl-mute",
+            "volume-path",
+            "volume-track",
+            "mode",
+            "ctl-fore",
+            "ctl-prve",
+            "openlist",
+            "openpanel",
+            "ctl-listadd",
+            "ctl-listremove",
+            "ctl-about"
+        ];
+        controldic.forEach(function (item) {
+            _this._playerctl.set(item, rootdom.querySelector("#" + item));
+        });
+    };
+    //#region UtilFunction
+    /**
+     * 获取控件字典中对应项
+     */
+    DefaultTemplateResolver.prototype.$g = function (ctl) {
+        return this._playerctl.get(ctl);
     };
     /**
      * 将文本转化为dom对象，方便使用筛选器进行查询
@@ -342,7 +706,7 @@ var DefaultTemplateResolver = /** @class */ (function () {
      */
     DefaultTemplateResolver.prototype.parseDom = function (arg) {
         var objE = document.createElement("div");
-        objE.innerHTML = arg.replace(/(>)\s+?(<)/mg, "$1$2").trim();
+        objE.innerHTML = arg.replace(/(>)\s+?(<)/gm, "$1$2").trim();
         return objE;
     };
     /**
@@ -355,7 +719,7 @@ var DefaultTemplateResolver = /** @class */ (function () {
         x = center.x + x;
         y = center.y - y;
         var t = center.y - radius;
-        if (percent < 0.50)
+        if (percent < 0.5)
             return "M " + center.x + "," + t + " A " + radius + " " + radius + " 0 0 1 " + x + " " + y;
         else if (percent == 1)
             return "M " + center.x + "," + t + " A " + radius + " " + radius + "  0 1 1 " + (x - 0.01) + " " + y;
@@ -376,9 +740,162 @@ var DefaultTemplateResolver = /** @class */ (function () {
         var angle = (Math.atan2(det, dot) / Math.PI) * 180;
         return (angle + 360) % 360;
     };
+    /**
+     *
+     * @param element
+     * @param tip
+     */
+    DefaultTemplateResolver.prototype.setElementTip = function (element, tip) {
+        element && (element.title = tip);
+    };
+    /**
+     *
+     * @param element 需要设置的元素
+     * @param normal 元素的默认状态
+     * @param active 元素的变化状态
+     */
+    DefaultTemplateResolver.prototype.switchElementStatus = function (element, normal, active) {
+        if (element) {
+            var classl = element.classList;
+            // prepare && prepare(normal);
+            if (normal == null) {
+                classl.contains(active) ? classl.remove(active) : null;
+                return;
+            }
+            else {
+                classl.contains(normal)
+                    ? null
+                    : classl.contains(active)
+                        ? (classl.remove(active), classl.add(normal))
+                        : classl.add(normal);
+            }
+        }
+    };
     return DefaultTemplateResolver;
 }());
 exports.DefaultTemplateResolver = DefaultTemplateResolver;
+
+
+/***/ }),
+
+/***/ "./RectPlayer/SourceCore.ts":
+/*!**********************************!*\
+  !*** ./RectPlayer/SourceCore.ts ***!
+  \**********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ *
+ * @Y_Theta http://blog.y-theta.cn
+ *
+ * PlayerCoreContract
+ *
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
+var PlayerModel_1 = __webpack_require__(/*! ./PlayerModel */ "./RectPlayer/PlayerModel.ts");
+/** 网易云音乐资源 */
+var NeteaseCore = /** @class */ (function () {
+    function NeteaseCore() {
+        this.Loaded = false;
+        this._loaded = false;
+        this.Playlist = null;
+    }
+    NeteaseCore.prototype.GetPlaylist = function (url) {
+        if (url)
+            this.getneteasePlayListbyID(url);
+    };
+    NeteaseCore.prototype.getneteasePlayListbyID = function (id) {
+        var _this = this;
+        var orilist = null;
+        Utils_1.Utils.Ajax({
+            async: true,
+            url: "http://api.y-theta.cn/Netease/playlist/detail?id=" + id,
+            success: function (data) {
+                orilist = JSON.parse(data);
+                if (orilist.code == 200) {
+                    var oripl = orilist.playlist;
+                    var pl_1 = new PlayerModel_1.PlayList();
+                    pl_1.avatarUrl = oripl.coverImgUrl;
+                    pl_1.nickname = oripl.name;
+                    pl_1.signature = oripl.id;
+                    pl_1.tracks = new Array();
+                    _this.Playlist = pl_1;
+                    oripl.tracks.forEach(function (t) {
+                        pl_1.tracks.push({
+                            id: t.id,
+                            name: t.name,
+                            src: null,
+                            al: {
+                                id: t.al.id,
+                                name: t.al.name,
+                                url: t.al.picUrl
+                            },
+                            ar: _this.getauthor(t.ar)
+                        });
+                    });
+                    pl_1.tracks.forEach(function (t) {
+                        Utils_1.Utils.Ajax({
+                            async: true,
+                            url: "http://api.y-theta.cn/Netease/music/url?id=" + t.id + "&br=128000",
+                            success: function (data) {
+                                t.src = JSON.parse(data).data[0].url;
+                            },
+                            failed: function (status) {
+                                Utils_1.Utils.Log(status);
+                            },
+                            prepare: function () {
+                                Utils_1.Utils.Log("Getting Song" + t.id);
+                            }
+                        });
+                    });
+                    setTimeout(_this.waitAsync.bind(_this), 100);
+                }
+            },
+            failed: function (status) {
+                Utils_1.Utils.Log(status);
+            },
+            prepare: function () {
+                _this.Loaded = false;
+                Utils_1.Utils.Log("Getting Playlist");
+            }
+        });
+    };
+    NeteaseCore.prototype.getauthor = function (ars) {
+        var arr = new Array();
+        ars.forEach(function (ar) {
+            arr.push({
+                id: ar.id,
+                name: ar.name
+            });
+        });
+        return arr;
+    };
+    NeteaseCore.prototype.waitAsync = function () {
+        var _this = this;
+        this._loaded = true;
+        this.Playlist.tracks.forEach(function (v) {
+            if (v.src == null)
+                _this._loaded = false;
+        });
+        this._loaded ? (this.Loaded = true) : setTimeout(this.waitAsync.bind(this), 100);
+    };
+    return NeteaseCore;
+}());
+exports.NeteaseCore = NeteaseCore;
+/** 本地文件资源 */
+var LocalCore = /** @class */ (function () {
+    function LocalCore() {
+    }
+    LocalCore.prototype.GetPlaylist = function (url) {
+        return null;
+    };
+    return LocalCore;
+}());
+exports.LocalCore = LocalCore;
 
 
 /***/ }),
@@ -534,34 +1051,6 @@ var AjaxOption = /** @class */ (function () {
     return AjaxOption;
 }());
 exports.AjaxOption = AjaxOption;
-
-
-/***/ }),
-
-/***/ "./RectPlayer/extends.js":
-/*!*******************************!*\
-  !*** ./RectPlayer/extends.js ***!
-  \*******************************/
-/*! exports provided: __extends */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__extends", function() { return __extends; });
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
 
 
 /***/ })

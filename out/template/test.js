@@ -1,3 +1,4 @@
+
 (function() {
   let ie = !!(window.attachEvent && !window.opera);
   let webkit = /webkit\/(\d+)/i.test(navigator.userAgent) && ~~RegExp.$1 < 525;
@@ -25,6 +26,7 @@
       }, 0);
   };
 })();
+
 
 var handle;
 var vpanel, clip;

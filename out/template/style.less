@@ -200,8 +200,8 @@
 #rectPlayer {
   display: block;
   position: fixed;
-  bottom: 0;
-  left: 0;
+  bottom: 0px;
+  left: 0px;
   width: @coverwidth;
   height: @coverheight;
   .noneMP();
@@ -222,9 +222,9 @@
     position: absolute;
     overflow: hidden;
 
-    .img {
+    .avatar {
       .matchparent();
-      background-image: url(../../cover.jpg);
+      background-image: none;
       // background: fixed;
       background-repeat: no-repeat;
       background-size: cover;
@@ -232,6 +232,17 @@
       -o-background-size: cover;
       background-position: center center;
       overflow: hidden;
+    }
+
+    .resolve{
+        .matchparent();
+        display: none;
+    }
+
+    .static{
+        .matchparent();
+        display: none;
+        background-color: none;
     }
 
     .ccontrol {
@@ -322,7 +333,8 @@
       position: absolute;
       left: @trackpadding;
       top: 8px;
-      font-size: 14pt;
+      overflow-x: hidden;
+      font-size: 12pt;
     }
 
     .author:extend(.rpele .text) {
@@ -395,10 +407,12 @@
 
       .mute {
         display: none;
+        .no-interact();
       }
 
       .num {
         display: none;
+        .no-interact();
       }
 
       &:hover {
@@ -530,7 +544,7 @@
     }
 
     .detail {
-      overflow-y: scroll;
+      overflow-y: auto;
       overflow-x: hidden;
       display: block;
       flex-grow: 1;

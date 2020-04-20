@@ -9,33 +9,26 @@
 import { Utils } from "./Utils";
 
 
-class PlayerCore {
+interface SourceCore {
 
-    public GetPlaylist: getPlayList;
-    public GetSrc: getSrcurl;
+    GetPlaylist(url: number | string): Array<any>;
+    GetSrc(url: number): Array<any>;
 
-    constructor() {
-    }
-}
-
-interface getPlayList {
-    (url: number | string): Array<any>;
-}
-
-interface getSrcurl {
-    (url: number): Array<any>;
 }
 
 /** 网易云音乐资源 */
-class NeteaseCore extends PlayerCore {
+class NeteaseCore implements SourceCore {
 
     constructor() {
-        super();
-        this.GetPlaylist = id => {
-            if (typeof (id) === "number")
-                return this.getneteasePlayListbyID(id);
-            return [];
-        }
+
+    }
+
+    public GetPlaylist(url: number | string): Array<any> {
+        return null;
+    }
+
+    public GetSrc(url: number): Array<any> {
+        return null;
     }
 
     private getneteasePlayListbyID(id: number): Array<any> {
@@ -55,10 +48,19 @@ class NeteaseCore extends PlayerCore {
 }
 
 /** 本地文件资源 */
-class LocalCore extends PlayerCore {
+class LocalCore implements SourceCore {
+
+
+    public GetPlaylist(url: number | string): Array<any> {
+        return null;
+    }
+
+    public GetSrc(url: number): Array<any> {
+        return null;
+    }
 
 
 }
 
 
-export { PlayerCore, NeteaseCore, LocalCore }
+export { SourceCore, NeteaseCore, LocalCore }

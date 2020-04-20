@@ -31,11 +31,11 @@ module.exports = {
         ]
     },
     externals: {
-        "xml-js": {
-            root: "window",
-            commonjs: "global",
-            commonjs2: "global",
-        },
+        // "xml-js": {
+        //     root: "window",
+        //     commonjs: "global",
+        //     commonjs2: "global",
+        // },
         "less": {
           root: "window",
           commonjs: "global",

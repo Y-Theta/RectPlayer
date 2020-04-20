@@ -7,7 +7,6 @@ class PlayList {
     public avatarUrl: string;
     public nickname: string;
     public signature: string;
-    public backgroundUrl: string;
     public tracks: Array<Track>;
 }
 
@@ -17,9 +16,9 @@ class PlayList {
 class Track {
     public id: number;
     public name: string;
+    public src: string;
     public ar: Array<Author>;
     public al: Avatar;
-
 }
 
 /**
@@ -40,16 +39,18 @@ class Avatar {
 }
 
 /**
- * 
+ *
  * */
 class RectPlayerOption {
     public Reslover: IRectplayerTemplateResolver;
     public EnableLog: boolean;
     public PlayMode: PlayMode;
+    public Async: boolean;
+    public PlaylistId: number | string;
 }
 
 /**
- * 
+ *
  */
 class Point {
     public x: number;
@@ -57,13 +58,13 @@ class Point {
 }
 
 /**
- * 
+ *
  */
 enum PlayMode {
-    Random,
-    LoopOne,
-    LoopList,
-    List,
+    normal = "normal",
+    repeat = "repeat",
+    repeatone = "repeatone",
+    random = "random"
 }
 
-export { PlayList, Track, Author, Avatar, RectPlayerOption, Point, PlayMode }
+export { PlayList, Track, Author, Avatar, RectPlayerOption, Point, PlayMode };
