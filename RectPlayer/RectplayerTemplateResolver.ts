@@ -3,7 +3,6 @@
  * 模板解析类,用于定义如何解析其Html模板
  *
  * */
-
 import { PlayList, Point, Track, PlayMode } from "./PlayerModel";
 import { PlayerItem } from "./PlayerItem";
 import { IControlContract } from "./IControlContract";
@@ -36,6 +35,7 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
     private _playerctl = new Map<string, HTMLElement>();
     private _volume: number = 0;
     private _volumebak: number = 0;
+    private _volumemax = 6000;
     private _playmode: PlayMode = PlayMode.normal;
     private _playmodeloop: PlayMode[] = [PlayMode.normal, PlayMode.repeat, PlayMode.repeatone, PlayMode.random];
     private _playlist: PlayList = null;
@@ -85,6 +85,10 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
 
         this.$g("mode").addEventListener("click", this.setmode.bind(this));
         this.switchmode(this._playmode);
+
+        this.$g("list-detail").onclick = this.listClick.bind(this);
+        this.$g("list-detail").ondblclick = this.listDbClick.bind(this);
+        this.setVolume(this._volumemax / 2);
         //#endregion
 
         this._playerelement.append(playerdom);
@@ -94,7 +98,7 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
         playeritem.Control = this;
 
         this._playerctl.forEach(v => {
-            v.id = null;
+            v.removeAttribute("id");
         });
 
         return playeritem;
@@ -102,28 +106,34 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
 
     public RenderTemplate(data: PlayList) {
         this._playlist = data;
-        this._playlist &&
+        if (this._playlist) {
+            this.$g("list-detail").innerHTML = null;
             this._playlist.tracks.forEach((v, i, ins) => {
                 let listitem = this.parseDom(this._listtemplate);
                 let liid = listitem.querySelector("#id");
-                liid.innerHTML = "" + i;
+                liid.innerHTML = "" + (i + 1);
+                liid.removeAttribute("id");
                 let liname = listitem.querySelector("#info");
                 liname.innerHTML = "" + v.name + (v.ar[0] && "-" + v.ar[0].name);
+                liname.removeAttribute("id");
                 this.$g("list-detail").appendChild(listitem.childNodes[0]);
             });
+        }
         Utils.Log(this._playlist.tracks[0].al.url);
         this._songid = 0;
         this.updateUI(this._songid);
     }
 
     /**
-     * 
+     *
      */
-    private updateUI(id:number){
-        this.$g("cover-avatar").style.backgroundImage = "url(" + this._playlist.tracks[id].al.url + ")";
-        this.$g("source").setAttribute("src", this._playlist.tracks[id].src);
-        this.$g("name").innerHTML = this._playlist.tracks[id].name;
-        this.$g("author").innerHTML = this._playlist.tracks[id].ar[0].name;
+    private updateUI(id: number) {
+        if (id < this._playlist.tracks.length && this._playlist.tracks[id]) {
+            this.$g("cover-avatar").style.backgroundImage = "url(" + this._playlist.tracks[id].al.url + ")";
+            this.$g("source").setAttribute("src", this._playlist.tracks[id].src);
+            this.$g("name").innerHTML = this._playlist.tracks[id].name;
+            this.$g("author").innerHTML = this._playlist.tracks[id].ar[0].name;
+        }
     }
 
     //#region 播放列表/控制面板
@@ -181,7 +191,7 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
 
         let angle = this.getcrosslineAngle({ x: cw, y: 0 }, { x: x1, y: y1 }, { x: cw, y: ch });
         this._mute = false;
-        this._volume = (angle / 360) * 6000;
+        this._volume = (angle / 360) * this._volumemax;
         this.setVolume(this._volume);
     }
 
@@ -201,7 +211,6 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
 
         this._mute && this.setMute(false);
         this._volume += data;
-        this._volume = this._volume < 6000 ? (this._volume < 0 ? 0 : this._volume) : 6000;
         this.setVolume(this._volume);
     }
 
@@ -209,7 +218,8 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
      * 设置音量
      */
     private setVolume(v: number) {
-        let newpath = this.parsePercent(v / 6000, { x: 32, y: 32 }, 24);
+        this._volume = v < this._volumemax ? (v < 0 ? 0 : v) : this._volumemax;
+        let newpath = this.parsePercent(this._volume / this._volumemax, { x: 32, y: 32 }, 24);
         this.$g("volume-path").setAttribute("d", newpath);
 
         var volume = this.$g("volume");
@@ -218,7 +228,7 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
         } else {
             volume.classList.contains("mute") ? volume.classList.remove("mute") : null;
         }
-        this.$g("source").volume = v / 6000;
+        this.$g("source").volume = this._volume / this._volumemax;
     }
 
     /**
@@ -233,7 +243,6 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
         } else {
             this._volume = this._volumebak;
         }
-        this.$g("source").volume = this._volume / 6000;
     }
     //#endregion
 
@@ -271,19 +280,13 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
     }
 
     private play(id: number) {
-        if (id < 0) return;
+        if (id < 0 || id == this._songid) return;
         this._songid = id;
-        let song: Track = null;
-        this._playlist.tracks.forEach((t, i) => {
-            if (t.id == this._songid) song = t;
-        });
-        if (song != null) {
-            this.$g("name").innerHTML = song.name;
-            this.$g("author").innerHTML = song.ar[0] ? song.ar[0].name : "未知作者";
-        }
+        this.updateUI(this._songid);
 
         this._playing = true;
         this.switchElementStatus(this._playerelement, "play", "pause");
+        this.$g("source").play();
     }
 
     private prve() {
@@ -299,6 +302,28 @@ class DefaultTemplateResolver implements IRectplayerTemplateResolver, IControlCo
         this.play(this._songid);
     }
     //#endregion
+
+    private listClick(e: MouseEvent) {
+        let ev = e || window.event;
+        let tar = ev.target as HTMLElement;
+        // Utils.Log(tar.tagName);
+        if (tar && tar.tagName.toUpperCase() === "LI") {
+            Utils.Log((tar.childNodes[1] as HTMLElement).innerText);
+        }
+    }
+
+    private listDbClick(e: MouseEvent) {
+        let ev = e || window.event;
+        let tar = ev.target as HTMLElement;
+        // Utils.Log(tar.tagName);
+        if (tar && tar.tagName.toUpperCase() === "LI") {
+            let songid = ~~(tar.childNodes[1] as HTMLElement).innerText;
+            Utils.Log(songid);
+            this.play(songid - 1);
+        }
+    }
+
+    private listSelect(id: number) {}
 
     /**
      * 装填控件字典

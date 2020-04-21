@@ -27,7 +27,7 @@
 
 @-webkit-keyframes toggle_panel_on {
   0% {
-    transform: translateX(-224px);
+    transform: translateX(-260px);
   }
 
   100% {
@@ -37,7 +37,7 @@
 
 @keyframes toggle_panel_on {
   0% {
-    transform: translateX(-224px);
+    transform: translateX(-260px);
   }
 
   100% {
@@ -51,7 +51,7 @@
   }
 
   100% {
-    transform: translateX(-224px);
+    transform: translateX(-260px);
   }
 }
 
@@ -61,7 +61,7 @@
   }
 
   100% {
-    transform: translateX(-224px);
+    transform: translateX(-260px);
   }
 }
 
@@ -71,7 +71,7 @@
   }
 
   100% {
-    width: 408px;
+    width: 444px;
   }
 }
 
@@ -81,13 +81,13 @@
   }
 
   100% {
-    width: 408px;
+    width: 444px;
   }
 }
 
 @-webkit-keyframes clip_off {
   0% {
-    width: 408px;
+    width: 444px;
   }
 
   100% {
@@ -97,7 +97,7 @@
 
 @keyframes clip_off {
   0% {
-    width: 408px;
+    width: 444px;
   }
 
   100% {
@@ -152,7 +152,7 @@
 
   100% {
     height: 266px;
-    width: 325px;
+    width: 361px;
   }
 }
 
@@ -163,14 +163,14 @@
 
   100% {
     height: 266px;
-    width: 325px;
+    width: 361px;
   }
 }
 
 @-webkit-keyframes list_clip_off {
   0% {
     height: 266px;
-    width: 325px;
+    width: 361px;
   }
 
   100% {
@@ -182,7 +182,7 @@
 @keyframes list_clip_off {
   0% {
     height: 266px;
-    width: 325px;
+    width: 361px;
   }
 
   100% {
@@ -245,8 +245,8 @@
 #rectPlayer {
   display: block;
   position: fixed;
-  bottom: 0px;
-  left: 0px;
+  bottom: 120px;
+  left: 120px;
   width: 84px;
   height: 84px;
   margin: 0;
@@ -272,9 +272,13 @@
   overflow: hidden;
 }
 
-#rectPlayer .cover .avatar {
+#rectPlayer .cover .avatar,
+#rectPlayer .cover .static {
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   background-image: none;
   background-repeat: no-repeat;
   background-size: cover;
@@ -287,14 +291,14 @@
 #rectPlayer .cover .resolve {
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
   display: none;
 }
 
 #rectPlayer .cover .static {
-  width: 100%;
-  height: 100%;
-  display: none;
-  background-color: none;
+  background-image: url(../cover.jpg);
 }
 
 #rectPlayer .cover .ccontrol {
@@ -341,7 +345,8 @@
   fill: rgba(204, 204, 204, 0.66666667);
 }
 
-#rectPlayer .cover:hover .img {
+#rectPlayer .cover:hover .avatar,
+#rectPlayer .cover:hover .static {
   filter: blur(0.75px);
 }
 
@@ -361,15 +366,15 @@
 #rectPlayer .cpanel {
   z-index: 90;
   height: 84px;
-  width: 324px;
+  width: 360px;
   overflow: hidden;
   position: absolute;
   background-color: #fefefe;
-  transform: translateX(-224px);
-  -ms-transform: translateX(-224px);
-  -moz-transform: translateX(-224px);
-  -webkit-transform: translateX(-224px);
-  -o-transform: translateX(-224px);
+  transform: translateX(-260px);
+  -ms-transform: translateX(-260px);
+  -moz-transform: translateX(-260px);
+  -webkit-transform: translateX(-260px);
+  -o-transform: translateX(-260px);
 }
 
 #rectPlayer .handle {
@@ -392,8 +397,11 @@
   position: absolute;
   left: 8px;
   top: 8px;
+  font-size: 10pt;
+  max-width: 144px;
   overflow-x: hidden;
-  font-size: 12pt;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #rectPlayer .control .author {
@@ -401,6 +409,7 @@
   font-weight: 200;
   left: 8px;
   top: 32px;
+  font-size: xx-small;
 }
 
 #rectPlayer .control .track {
@@ -568,7 +577,7 @@
 #rectPlayer .list {
   z-index: 81;
   position: absolute;
-  width: 325px;
+  width: 361px;
   height: 182px;
   border: 1px solid black;
   border-bottom: none;
@@ -620,10 +629,12 @@
   display: block;
   margin: 0 4px;
   font-size: 8pt;
+  pointer-events: none;
 }
 
 #rectPlayer .list .detail li p:nth-child(1) {
   flex-basis: 2px;
+  flex-shrink: 0;
   margin: 4px 0;
   background-color: #00000040;
 }
@@ -635,6 +646,7 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  flex-shrink: 0;
   text-align: center;
   padding-top: 6px;
   flex-basis: 32px;
@@ -649,10 +661,14 @@
   user-select: none;
   padding-top: 6px;
   flex-grow: 1;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #rectPlayer .list .detail li p:nth-child(4) {
   flex-basis: 2px;
+  flex-shrink: 0;
   margin: 4px 0;
   background-color: #00000040;
 }
@@ -709,7 +725,7 @@
 }
 
 #rectPlayer .list .detail::-webkit-scrollbar-track {
-  border-left: 1px solid #ccc;
+  border-left: 1px solid #ccc inset;
 }
 
 #rectPlayer .list .detail::-webkit-scrollbar-thumb {

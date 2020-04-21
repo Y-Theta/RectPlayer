@@ -2,10 +2,10 @@
 <tempalte>
     <player>
         <audio id="source" class="src" src=""></audio>
-        <div id="cover" class="cover">
-            <div id="cover-avatar" class="avatar"></div>
-            <div id="cover-resolve" class="resolve"></div>
+        <div class="cover">
             <div id="cover-static" class="static"></div>
+            <div id="cover-resolve" class="resolve"></div>
+            <div id="cover-avatar" class="avatar"></div>
             <div id="ctl-play" class="ccontrol">
                 <svg  xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="-4 -6 48 48">
                     <path class="btn" d="M29,18,11,28.39V7.61Z" />

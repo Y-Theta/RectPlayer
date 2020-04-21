@@ -4,9 +4,8 @@
  *
  * Utils
  *
-*/
+ */
 class Utils {
-
     private static _rootpath: string = null;
     private static _respath: string = "http://res.y-theta.cn";
     public static _enablelog: boolean = true;
@@ -15,16 +14,16 @@ class Utils {
         let ie = !!(window.attachEvent && !window.opera);
         let webkit = /webkit\/(\d+)/i.test(navigator.userAgent) && ~~RegExp.$1 < 525;
         let fn: any = [];
-        let run = function () {
+        let run = function() {
             for (var i = 0; i < fn.length; i++) fn[i]();
         };
-        document.ready = function (f) {
+        document.ready = function(f) {
             if (!ie && !webkit && document.addEventListener) {
                 return document.addEventListener("DOMContentLoaded", f, false);
             }
             if (fn.push(f) > 1) return;
             if (ie)
-                (function () {
+                (function() {
                     try {
                         document.documentElement.scroll({ left: 0 });
                         run();
@@ -33,18 +32,34 @@ class Utils {
                     }
                 })();
             else if (webkit)
-                var t = setInterval(function () {
+                var t = setInterval(function() {
                     if (/^(loaded|complete)$/.test(document.readyState)) clearInterval(t), run();
                 }, 0);
         };
     }
 
+    private static hasChinese(temp: string) {
+        //var re = /.*[\\u4E00-\\u9FFF]+.*$/;
+        return escape(temp).indexOf("%u")>=0;
+    }
 
     /**
      * 输出函数
      */
     static Log(obj: any) {
         Utils._enablelog ? console.log(obj) : null;
+    }
+
+    /* 质朴长存法  by lifesinger */
+    static PadLeft(num: number | string, n: number) {
+        let padnum = num.toString();
+        let len = num.toString().length;
+        let charp = typeof num == "string" ? (Utils.hasChinese(num) ? '\u3000' : " ") : "0";
+        while (len < n) {
+            padnum = charp + padnum;
+            len++;
+        }
+        return padnum;
     }
 
     /**
@@ -55,73 +70,75 @@ class Utils {
             case "resource":
                 return Utils._respath;
             case "root":
-                return Utils._rootpath || (Utils._rootpath = document.URL.replace(/([\s\S]*)(\/[^\/]*?\.html)/i, '$1'), Utils._rootpath);
-            case "": break;
+                return (
+                    Utils._rootpath ||
+                    ((Utils._rootpath = document.URL.replace(/([\s\S]*)(\/[^\/]*?\.html)/i, "$1")), Utils._rootpath)
+                );
+            case "":
+                break;
         }
     }
 
     /**
-     * 
-     * @param time 
+     *
+     * @param time
      */
     static TimeFormat(time: number) {
         let tempMin = time / 60;
         let tempSec = time % 60;
-        let curMin = tempMin < 10 ? ('0' + tempMin) : tempMin;
-        let curSec = tempSec < 10 ? ('0' + tempSec) : tempSec;
-        return curMin + ':' + curSec;
+        let curMin = tempMin < 10 ? "0" + tempMin : tempMin;
+        let curSec = tempSec < 10 ? "0" + tempSec : tempSec;
+        return curMin + ":" + curSec;
     }
 
     /**
-     * 
+     *
      * @param percent
      */
     static PercentFormat(percent: number) {
-        return (percent * 100).toFixed(2) + '%';
+        return (percent * 100).toFixed(2) + "%";
     }
 
     /**
-     * 
+     *
      * @param option
      */
     static Ajax(option: AjaxOption | any) {
         option.prepare && option.prepare();
-        let jslist = /\/([\S].+?js)\??/ig.exec(option.url);
-        if (jslist && (jslist.length > 0)) {
+        let jslist = /\/([\S].+?js)\??/gi.exec(option.url);
+        if (jslist && jslist.length > 0) {
             let script = document.createElement("script");
             script.type = "text/javascript";
-            script.onload = (e) => {
+            script.onload = e => {
                 option.success && option.success(jslist[1]);
-            }
+            };
             script.src = option.url;
             try {
                 document.body.appendChild(script);
             } catch (err) {
                 document.ready == null ? Utils.extenddocready() : null;
-                document.ready(()=>{
+                document.ready(() => {
                     document.body.appendChild(script);
-                })
+                });
             }
-        }
-        else {
+        } else {
             let xhr = new XMLHttpRequest();
+            xhr.timeout = option.timeout || 5000;
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {
                     // TODO:: 访问服务器文件与本地文件分别配置
-                    if (Utils.Path().indexOf('file:///') == 0) {
+                    if (Utils.Path().indexOf("file:///") == 0) {
                         option.success && option.success(xhr.responseText);
-                    }
-                    else {
+                    } else {
                         if (xhr.status >= 200 && xhr.status < 300) {
                             option.success && option.success(xhr.responseText);
                         } else {
                             option.failed && option.failed(xhr.status);
                         }
                     }
-
                 }
             };
-            xhr.open('GET', option.url, option.async);
+            xhr.open("GET", option.url, option.async);
             xhr.send(null);
         }
     }
@@ -129,7 +146,6 @@ class Utils {
 
 /** 请求参数 */
 class AjaxOption {
-
     /** 请求的URL */
     public url: string | null;
     /** 在发送数据前调用的方法 */
@@ -149,4 +165,4 @@ class AjaxOption {
     }
 }
 
-export { Utils, AjaxOption }
+export { Utils, AjaxOption };

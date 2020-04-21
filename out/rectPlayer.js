@@ -371,7 +371,7 @@ var RectPlayer = /** @class */ (function () {
     RectPlayer.prototype.rendertemplate = function () {
         this._srcResolver.Loaded ?
             (this._playlist = this._srcResolver.Playlist, this._templateResolver.RenderTemplate(this._playlist)) :
-            setTimeout(this.rendertemplate.bind(this), 100);
+            (this._srcResolver.Timeout ? Utils_1.Utils.Log("No Song Fetched ! TimeOut") : setTimeout(this.rendertemplate.bind(this), 100));
     };
     return RectPlayer;
 }());
@@ -414,6 +414,7 @@ var DefaultTemplateResolver = /** @class */ (function () {
         this._playerctl = new Map();
         this._volume = 0;
         this._volumebak = 0;
+        this._volumemax = 6000;
         this._playmode = PlayerModel_1.PlayMode.normal;
         this._playmodeloop = [PlayerModel_1.PlayMode.normal, PlayerModel_1.PlayMode.repeat, PlayerModel_1.PlayMode.repeatone, PlayerModel_1.PlayMode.random];
         this._playlist = null;
@@ -458,28 +459,35 @@ var DefaultTemplateResolver = /** @class */ (function () {
         this.$g("volume").onmousewheel = this.volumescroll.bind(this);
         this.$g("mode").addEventListener("click", this.setmode.bind(this));
         this.switchmode(this._playmode);
+        this.$g("list-detail").onclick = this.listClick.bind(this);
+        this.$g("list-detail").ondblclick = this.listDbClick.bind(this);
+        this.setVolume(this._volumemax / 2);
         //#endregion
         this._playerelement.append(playerdom);
         var playeritem = new PlayerItem_1.PlayerItem();
         playeritem.View = this._playerelement;
         playeritem.Control = this;
         this._playerctl.forEach(function (v) {
-            v.id = null;
+            v.removeAttribute("id");
         });
         return playeritem;
     };
     DefaultTemplateResolver.prototype.RenderTemplate = function (data) {
         var _this = this;
         this._playlist = data;
-        this._playlist &&
+        if (this._playlist) {
+            this.$g("list-detail").innerHTML = null;
             this._playlist.tracks.forEach(function (v, i, ins) {
                 var listitem = _this.parseDom(_this._listtemplate);
                 var liid = listitem.querySelector("#id");
-                liid.innerHTML = "" + i;
+                liid.innerHTML = "" + (i + 1);
+                liid.removeAttribute("id");
                 var liname = listitem.querySelector("#info");
                 liname.innerHTML = "" + v.name + (v.ar[0] && "-" + v.ar[0].name);
+                liname.removeAttribute("id");
                 _this.$g("list-detail").appendChild(listitem.childNodes[0]);
             });
+        }
         Utils_1.Utils.Log(this._playlist.tracks[0].al.url);
         this._songid = 0;
         this.updateUI(this._songid);
@@ -488,10 +496,12 @@ var DefaultTemplateResolver = /** @class */ (function () {
      *
      */
     DefaultTemplateResolver.prototype.updateUI = function (id) {
-        this.$g("cover-avatar").style.backgroundImage = "url(" + this._playlist.tracks[id].al.url + ")";
-        this.$g("source").setAttribute("src", this._playlist.tracks[id].src);
-        this.$g("name").innerHTML = this._playlist.tracks[id].name;
-        this.$g("author").innerHTML = this._playlist.tracks[id].ar[0].name;
+        if (id < this._playlist.tracks.length && this._playlist.tracks[id]) {
+            this.$g("cover-avatar").style.backgroundImage = "url(" + this._playlist.tracks[id].al.url + ")";
+            this.$g("source").setAttribute("src", this._playlist.tracks[id].src);
+            this.$g("name").innerHTML = this._playlist.tracks[id].name;
+            this.$g("author").innerHTML = this._playlist.tracks[id].ar[0].name;
+        }
     };
     //#region 播放列表/控制面板
     DefaultTemplateResolver.prototype.openlist = function (e) {
@@ -542,7 +552,7 @@ var DefaultTemplateResolver = /** @class */ (function () {
         var x1 = e.clientX - clip.x, y1 = e.clientY - clip.y;
         var angle = this.getcrosslineAngle({ x: cw, y: 0 }, { x: x1, y: y1 }, { x: cw, y: ch });
         this._mute = false;
-        this._volume = (angle / 360) * 6000;
+        this._volume = (angle / 360) * this._volumemax;
         this.setVolume(this._volume);
     };
     /**
@@ -561,14 +571,14 @@ var DefaultTemplateResolver = /** @class */ (function () {
         }
         this._mute && this.setMute(false);
         this._volume += data;
-        this._volume = this._volume < 6000 ? (this._volume < 0 ? 0 : this._volume) : 6000;
         this.setVolume(this._volume);
     };
     /**
      * 设置音量
      */
     DefaultTemplateResolver.prototype.setVolume = function (v) {
-        var newpath = this.parsePercent(v / 6000, { x: 32, y: 32 }, 24);
+        this._volume = v < this._volumemax ? (v < 0 ? 0 : v) : this._volumemax;
+        var newpath = this.parsePercent(this._volume / this._volumemax, { x: 32, y: 32 }, 24);
         this.$g("volume-path").setAttribute("d", newpath);
         var volume = this.$g("volume");
         if (this._volume == 0) {
@@ -577,7 +587,7 @@ var DefaultTemplateResolver = /** @class */ (function () {
         else {
             volume.classList.contains("mute") ? volume.classList.remove("mute") : null;
         }
-        this.$g("source").volume = v / 6000;
+        this.$g("source").volume = this._volume / this._volumemax;
     };
     /**
      * 设置静音
@@ -592,7 +602,6 @@ var DefaultTemplateResolver = /** @class */ (function () {
         else {
             this._volume = this._volumebak;
         }
-        this.$g("source").volume = this._volume / 6000;
     };
     //#endregion
     //#region 设置播放模式
@@ -626,21 +635,13 @@ var DefaultTemplateResolver = /** @class */ (function () {
         this.$g("source").pause();
     };
     DefaultTemplateResolver.prototype.play = function (id) {
-        var _this = this;
-        if (id < 0)
+        if (id < 0 || id == this._songid)
             return;
         this._songid = id;
-        var song = null;
-        this._playlist.tracks.forEach(function (t, i) {
-            if (t.id == _this._songid)
-                song = t;
-        });
-        if (song != null) {
-            this.$g("name").innerHTML = song.name;
-            this.$g("author").innerHTML = song.ar[0] ? song.ar[0].name : "未知作者";
-        }
+        this.updateUI(this._songid);
         this._playing = true;
         this.switchElementStatus(this._playerelement, "play", "pause");
+        this.$g("source").play();
     };
     DefaultTemplateResolver.prototype.prve = function () {
         if (this._songid < 0)
@@ -656,6 +657,25 @@ var DefaultTemplateResolver = /** @class */ (function () {
         this.play(this._songid);
     };
     //#endregion
+    DefaultTemplateResolver.prototype.listClick = function (e) {
+        var ev = e || window.event;
+        var tar = ev.target;
+        // Utils.Log(tar.tagName);
+        if (tar && tar.tagName.toUpperCase() === "LI") {
+            Utils_1.Utils.Log(tar.childNodes[1].innerText);
+        }
+    };
+    DefaultTemplateResolver.prototype.listDbClick = function (e) {
+        var ev = e || window.event;
+        var tar = ev.target;
+        // Utils.Log(tar.tagName);
+        if (tar && tar.tagName.toUpperCase() === "LI") {
+            var songid = ~~tar.childNodes[1].innerText;
+            Utils_1.Utils.Log(songid);
+            this.play(songid - 1);
+        }
+    };
+    DefaultTemplateResolver.prototype.listSelect = function (id) { };
     /**
      * 装填控件字典
      * @param rootdom
@@ -801,8 +821,11 @@ var PlayerModel_1 = __webpack_require__(/*! ./PlayerModel */ "./RectPlayer/Playe
 var NeteaseCore = /** @class */ (function () {
     function NeteaseCore() {
         this.Loaded = false;
-        this._loaded = false;
         this.Playlist = null;
+        this.Timeout = false;
+        this._loaded = false;
+        this._timeout = 500; //单首歌抓取超时 平均
+        this._timeouttimer = 0;
     }
     NeteaseCore.prototype.GetPlaylist = function (url) {
         if (url)
@@ -815,8 +838,11 @@ var NeteaseCore = /** @class */ (function () {
             async: true,
             url: "http://api.y-theta.cn/Netease/playlist/detail?id=" + id,
             success: function (data) {
-                orilist = JSON.parse(data);
-                if (orilist.code == 200) {
+                try {
+                    orilist = JSON.parse(data);
+                }
+                catch (_a) { }
+                if (orilist && orilist.code && orilist.code === 200) {
                     var oripl = orilist.playlist;
                     var pl_1 = new PlayerModel_1.PlayList();
                     pl_1.avatarUrl = oripl.coverImgUrl;
@@ -842,24 +868,30 @@ var NeteaseCore = /** @class */ (function () {
                             async: true,
                             url: "http://api.y-theta.cn/Netease/music/url?id=" + t.id + "&br=128000",
                             success: function (data) {
+                                Utils_1.Utils.Log("Song : " + Utils_1.Utils.PadLeft(t.name, 16) + "[ Fetched ]");
                                 t.src = JSON.parse(data).data[0].url;
                             },
                             failed: function (status) {
                                 Utils_1.Utils.Log(status);
                             },
                             prepare: function () {
-                                Utils_1.Utils.Log("Getting Song" + t.id);
+                                Utils_1.Utils.Log("Song : " + Utils_1.Utils.PadLeft(t.name, 16) + "[ Fetching ]");
                             }
                         });
                     });
+                    _this._timeouttimer = _this._timeout * pl_1.tracks.length;
                     setTimeout(_this.waitAsync.bind(_this), 100);
+                }
+                else {
+                    Utils_1.Utils.Log("Playlist Load Failed! Please try later or check if the id is right ");
                 }
             },
             failed: function (status) {
-                Utils_1.Utils.Log(status);
+                Utils_1.Utils.Log("Playlist Load Failed!" + status);
             },
             prepare: function () {
                 _this.Loaded = false;
+                _this.Timeout = false;
                 Utils_1.Utils.Log("Getting Playlist");
             }
         });
@@ -881,6 +913,12 @@ var NeteaseCore = /** @class */ (function () {
             if (v.src == null)
                 _this._loaded = false;
         });
+        this._timeouttimer -= 100;
+        Utils_1.Utils.Log("Fetch Song Timer : " + this._timeouttimer);
+        if (this._timeouttimer < 0) {
+            this.Timeout = true;
+            return;
+        }
         this._loaded ? (this.Loaded = true) : setTimeout(this.waitAsync.bind(this), 100);
     };
     return NeteaseCore;
@@ -889,6 +927,7 @@ exports.NeteaseCore = NeteaseCore;
 /** 本地文件资源 */
 var LocalCore = /** @class */ (function () {
     function LocalCore() {
+        this.Timeout = false;
     }
     LocalCore.prototype.GetPlaylist = function (url) {
         return null;
@@ -916,7 +955,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  *
  * Utils
  *
-*/
+ */
 var Utils = /** @class */ (function () {
     function Utils() {
     }
@@ -951,11 +990,26 @@ var Utils = /** @class */ (function () {
                 }, 0);
         };
     };
+    Utils.hasChinese = function (temp) {
+        //var re = /.*[\\u4E00-\\u9FFF]+.*$/;
+        return escape(temp).indexOf("%u") >= 0;
+    };
     /**
      * 输出函数
      */
     Utils.Log = function (obj) {
         Utils._enablelog ? console.log(obj) : null;
+    };
+    /* 质朴长存法  by lifesinger */
+    Utils.PadLeft = function (num, n) {
+        var padnum = num.toString();
+        var len = num.toString().length;
+        var charp = typeof num == "string" ? (Utils.hasChinese(num) ? '\u3000' : " ") : "0";
+        while (len < n) {
+            padnum = charp + padnum;
+            len++;
+        }
+        return padnum;
     };
     /**
      * 获取目录路径
@@ -966,8 +1020,10 @@ var Utils = /** @class */ (function () {
             case "resource":
                 return Utils._respath;
             case "root":
-                return Utils._rootpath || (Utils._rootpath = document.URL.replace(/([\s\S]*)(\/[^\/]*?\.html)/i, '$1'), Utils._rootpath);
-            case "": break;
+                return (Utils._rootpath ||
+                    ((Utils._rootpath = document.URL.replace(/([\s\S]*)(\/[^\/]*?\.html)/i, "$1")), Utils._rootpath));
+            case "":
+                break;
         }
     };
     /**
@@ -977,16 +1033,16 @@ var Utils = /** @class */ (function () {
     Utils.TimeFormat = function (time) {
         var tempMin = time / 60;
         var tempSec = time % 60;
-        var curMin = tempMin < 10 ? ('0' + tempMin) : tempMin;
-        var curSec = tempSec < 10 ? ('0' + tempSec) : tempSec;
-        return curMin + ':' + curSec;
+        var curMin = tempMin < 10 ? "0" + tempMin : tempMin;
+        var curSec = tempSec < 10 ? "0" + tempSec : tempSec;
+        return curMin + ":" + curSec;
     };
     /**
      *
      * @param percent
      */
     Utils.PercentFormat = function (percent) {
-        return (percent * 100).toFixed(2) + '%';
+        return (percent * 100).toFixed(2) + "%";
     };
     /**
      *
@@ -994,8 +1050,8 @@ var Utils = /** @class */ (function () {
      */
     Utils.Ajax = function (option) {
         option.prepare && option.prepare();
-        var jslist = /\/([\S].+?js)\??/ig.exec(option.url);
-        if (jslist && (jslist.length > 0)) {
+        var jslist = /\/([\S].+?js)\??/gi.exec(option.url);
+        if (jslist && jslist.length > 0) {
             var script_1 = document.createElement("script");
             script_1.type = "text/javascript";
             script_1.onload = function (e) {
@@ -1014,10 +1070,11 @@ var Utils = /** @class */ (function () {
         }
         else {
             var xhr_1 = new XMLHttpRequest();
+            xhr_1.timeout = option.timeout || 5000;
             xhr_1.onreadystatechange = function () {
                 if (xhr_1.readyState === 4) {
                     // TODO:: 访问服务器文件与本地文件分别配置
-                    if (Utils.Path().indexOf('file:///') == 0) {
+                    if (Utils.Path().indexOf("file:///") == 0) {
                         option.success && option.success(xhr_1.responseText);
                     }
                     else {
@@ -1030,7 +1087,7 @@ var Utils = /** @class */ (function () {
                     }
                 }
             };
-            xhr_1.open('GET', option.url, option.async);
+            xhr_1.open("GET", option.url, option.async);
             xhr_1.send(null);
         }
     };

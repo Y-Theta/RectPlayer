@@ -1,21 +1,35 @@
 {
-  // See https://go.microsoft.com/fwlink/?LinkId=733558
-  // for the documentation about the tasks.json format
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Webpack",
-      "type": "shell",
-      "command": "webpack",
-      "args": ["--mode", "development"]
-    },
-    {
-      "label": "PackDev",
-      "type": "shell",
-      "command": "${workspaceRoot}/.vscode/copydependences.ps1",
-      "dependsOn": ["Webpack"],
-      "dependsOrder": "sequence",
-      "group": "build"
-    }
-  ]
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Webpack",
+            "type": "shell",
+            "command": "webpack",
+            "args": ["--mode", "development"]
+        },
+        {
+            "label": "Webpackpro",
+            "type": "shell",
+            "command": "webpack",
+            "args": ["--mode", "production"]
+        },
+        {
+            "label": "PackDev",
+            "type": "shell",
+            "command": "${workspaceRoot}/.vscode/copydependences.ps1",
+            "dependsOn": ["Webpack"],
+            "dependsOrder": "sequence",
+            "group": "build"
+        },
+        {
+            "label": "PackPro",
+            "type": "shell",
+            "command": "${workspaceRoot}/.vscode/copydependences.ps1",
+            "dependsOn": ["Webpackpro"],
+            "dependsOrder": "sequence",
+            "group": "build"
+        }
+    ]
 }

@@ -173,6 +173,6 @@ export class RectPlayer {
     private rendertemplate(){
         this._srcResolver.Loaded ? 
         (this._playlist = this._srcResolver.Playlist,  this._templateResolver.RenderTemplate(this._playlist)):
-        setTimeout(this.rendertemplate.bind(this),100);
+        (this._srcResolver.Timeout ? Utils.Log("No Song Fetched ! TimeOut"): setTimeout(this.rendertemplate.bind(this),100));
     }
 }

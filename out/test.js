@@ -1,6 +1,6 @@
 var s = new RectPlayer({
-    EnableLog: true,
+    EnableLog: false,
     Async: true,
-    PlaylistId: 396075759
+    PlaylistId: 2679771228
 });
 s.TryResolve();
