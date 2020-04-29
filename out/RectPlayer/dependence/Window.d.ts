@@ -3,13 +3,11 @@
  */
 interface Window {
     attachEvent: Function;
-
     opera: Function;
 }
 
 interface Document {
     ready(f: Function): void;
-
     addEventListener(type: string, listener: Function, options?: boolean | AddEventListenerOptions): void;
 }
 
@@ -18,6 +16,9 @@ interface HTMLElement {
     play():void;
     pause():void;
     volume:number;
+    buffered:any;
+    duration:any;
+    currentTime:any;
 }
 
 interface Event {

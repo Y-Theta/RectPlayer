@@ -1,3 +1,5 @@
+import { Point } from "./Model/PlayerModel";
+
 /**
  *
  * @Y_Theta http://blog.y-theta.cn
@@ -10,37 +12,23 @@ class Utils {
     private static _respath: string = "http://res.y-theta.cn";
     public static _enablelog: boolean = true;
 
-    private static extenddocready() {
-        let ie = !!(window.attachEvent && !window.opera);
-        let webkit = /webkit\/(\d+)/i.test(navigator.userAgent) && ~~RegExp.$1 < 525;
-        let fn: any = [];
-        let run = function() {
-            for (var i = 0; i < fn.length; i++) fn[i]();
-        };
-        document.ready = function(f) {
-            if (!ie && !webkit && document.addEventListener) {
-                return document.addEventListener("DOMContentLoaded", f, false);
-            }
-            if (fn.push(f) > 1) return;
-            if (ie)
-                (function() {
-                    try {
-                        document.documentElement.scroll({ left: 0 });
-                        run();
-                    } catch (err) {
-                        setTimeout(arguments.callee, 0);
-                    }
-                })();
-            else if (webkit)
-                var t = setInterval(function() {
-                    if (/^(loaded|complete)$/.test(document.readyState)) clearInterval(t), run();
-                }, 0);
-        };
-    }
-
+    /**
+     * 判断有无中文字符
+     * @param temp 
+     */
     private static hasChinese(temp: string) {
         //var re = /.*[\\u4E00-\\u9FFF]+.*$/;
-        return escape(temp).indexOf("%u")>=0;
+        return escape(temp).indexOf("%u") >= 0;
+    }
+
+    /**
+     * 将文本转化为dom对象，方便使用筛选器进行查询
+     * @param arg 要转换为dom对象的文本
+     */
+    static Dom(arg: string) {
+        let objE = document.createElement("div");
+        objE.innerHTML = arg.replace(/(>)\s+?(<)/gm, "$1$2").trim();
+        return objE;
     }
 
     /**
@@ -54,7 +42,7 @@ class Utils {
     static PadLeft(num: number | string, n: number) {
         let padnum = num.toString();
         let len = num.toString().length;
-        let charp = typeof num == "string" ? (Utils.hasChinese(num) ? '\u3000' : " ") : "0";
+        let charp = typeof num == "string" ? (Utils.hasChinese(num) ? "\u3000" : " ") : "0";
         while (len < n) {
             padnum = charp + padnum;
             len++;
@@ -80,19 +68,19 @@ class Utils {
     }
 
     /**
-     *
+     * 将时间转化为 00:00格式
      * @param time
      */
     static TimeFormat(time: number) {
-        let tempMin = time / 60;
-        let tempSec = time % 60;
+        let tempMin = ~~(time / 60);
+        let tempSec = ~~(time % 60);
         let curMin = tempMin < 10 ? "0" + tempMin : tempMin;
         let curSec = tempSec < 10 ? "0" + tempSec : tempSec;
         return curMin + ":" + curSec;
     }
 
     /**
-     *
+     * 将小数转换为百分比
      * @param percent
      */
     static PercentFormat(percent: number) {
@@ -100,69 +88,60 @@ class Utils {
     }
 
     /**
-     *
-     * @param option
+     * 将百分比转化为svg的环形
      */
-    static Ajax(option: AjaxOption | any) {
-        option.prepare && option.prepare();
-        let jslist = /\/([\S].+?js)\??/gi.exec(option.url);
-        if (jslist && jslist.length > 0) {
-            let script = document.createElement("script");
-            script.type = "text/javascript";
-            script.onload = e => {
-                option.success && option.success(jslist[1]);
-            };
-            script.src = option.url;
-            try {
-                document.body.appendChild(script);
-            } catch (err) {
-                document.ready == null ? Utils.extenddocready() : null;
-                document.ready(() => {
-                    document.body.appendChild(script);
-                });
+    static Percent(percent: number, center: Point, radius: number): string {
+        let A = percent * Math.PI * 2;
+        let x = radius * Math.sin(A);
+        let y = radius * Math.cos(A);
+        x = center.x + x;
+        y = center.y - y;
+        let t = center.y - radius;
+
+        if (percent < 0.5) return "M " + center.x + "," + t + " A " + radius + " " + radius + " 0 0 1 " + x + " " + y;
+        else if (percent == 1)
+            return "M " + center.x + "," + t + " A " + radius + " " + radius + "  0 1 1 " + (x - 0.01) + " " + y;
+        else return "M " + center.x + "," + t + " A " + radius + " " + radius + "  0 1 1 " + x + " " + y;
+    }
+
+    /**
+     * 获取两直线夹角
+     * 直线由（p1 ,p） (p2 ,p) 确定
+     */
+    static AngleLL(p1: Point, p2: Point, p: Point) {
+        let x1 = p1.x - p.x;
+        let y1 = p1.y - p.y;
+        let x2 = p2.x - p.x;
+        let y2 = p2.y - p.y;
+
+        const dot = x1 * x2 + y1 * y2;
+        const det = x1 * y2 - y1 * x2;
+        const angle = (Math.atan2(det, dot) / Math.PI) * 180;
+        return (angle + 360) % 360;
+    }
+
+    /**
+     *
+     * @param element 需要设置的元素
+     * @param normal 元素的默认状态
+     * @param active 元素的变化状态
+     */
+    static SwitchElementStatus(element: HTMLElement, normal: string, active: string) {
+        if (element) {
+            let classl = element.classList;
+            // prepare && prepare(normal);
+            if (normal == null) {
+                classl.contains(active) ? classl.remove(active) : null;
+                return;
+            } else {
+                classl.contains(normal)
+                    ? null
+                    : classl.contains(active)
+                    ? (classl.remove(active), classl.add(normal))
+                    : classl.add(normal);
             }
-        } else {
-            let xhr = new XMLHttpRequest();
-            xhr.timeout = option.timeout || 5000;
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    // TODO:: 访问服务器文件与本地文件分别配置
-                    if (Utils.Path().indexOf("file:///") == 0) {
-                        option.success && option.success(xhr.responseText);
-                    } else {
-                        if (xhr.status >= 200 && xhr.status < 300) {
-                            option.success && option.success(xhr.responseText);
-                        } else {
-                            option.failed && option.failed(xhr.status);
-                        }
-                    }
-                }
-            };
-            xhr.open("GET", option.url, option.async);
-            xhr.send(null);
         }
     }
 }
 
-/** 请求参数 */
-class AjaxOption {
-    /** 请求的URL */
-    public url: string | null;
-    /** 在发送数据前调用的方法 */
-    public prepare: Function | null;
-    /** 发送成功的回调 */
-    public success: Function | null;
-    /** 发送失败的回调 */
-    public failed: Function | null;
-    /** 异步 */
-    public async: boolean | null;
-
-    constructor(url: string, prepare: Function, success: Function, failed: Function) {
-        this.url = url;
-        this.prepare = prepare;
-        this.success = success;
-        this.failed = failed;
-    }
-}
-
-export { Utils, AjaxOption };
+export { Utils };

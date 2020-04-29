@@ -200,8 +200,8 @@
 #rectPlayer {
     display: block;
     position: fixed;
-    bottom: 120px;
-    left: 120px;
+    bottom: 0px;
+    left: 0px;
     width: @coverwidth;
     height: @coverheight;
     .noneMP();
@@ -382,6 +382,8 @@
             }
 
             .thumb {
+                position: absolute;
+                right: 0;
                 width: @trackthickness;
                 background-color: @track-thumb;
             }
@@ -398,6 +400,8 @@
             height: 100%;
             margin: 0 0 0 @trackpadding;
             text-align: end;
+            width: 72px;
+            overflow: hidden;
 
             p {
                 display: inline;

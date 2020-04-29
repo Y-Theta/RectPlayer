@@ -12,4 +12,4 @@ foreach($mod in $modules){
     }
 }
 
-cp "./RectPlayer/*" "./out/RectPlayer"
+Copy-Item "./RectPlayer" "./out/RectPlayer" -Recurse -force

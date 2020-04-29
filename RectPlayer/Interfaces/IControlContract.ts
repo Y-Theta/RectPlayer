@@ -1,4 +1,4 @@
-import { PlayMode } from "./PlayerModel";
+import { PlayMode } from "../Model/PlayerModel";
 
 /**
  * 定义播放器的控制功能
@@ -41,18 +41,6 @@ interface IControlContract {
      * @param action 
      */
     Playlist(action: boolean): void;
-
-    /**
-     * 添加歌曲
-     * @param song 
-     */
-    Add(song: string | number): void;
-
-    /**
-     * 移除歌曲
-     * @param song 
-     */
-    Remove(song: string | number): void;
 
     /**
      * 切换播放器状态

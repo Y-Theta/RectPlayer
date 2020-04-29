@@ -45,7 +45,7 @@ module.exports = {
     plugins: [
         //new webpack.BannerPlugin(libraryName),
         new webpack.ProvidePlugin({
-            '__extends': [path.resolve(__dirname, 'RectPlayer/extends.js'), '__extends'],
+            '__extends': [path.resolve(__dirname, 'RectPlayer/dependence/extends.js'), '__extends'],
         })
     ]
 }

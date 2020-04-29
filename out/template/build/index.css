@@ -245,8 +245,8 @@
 #rectPlayer {
   display: block;
   position: fixed;
-  bottom: 120px;
-  left: 120px;
+  bottom: 0px;
+  left: 0px;
   width: 84px;
   height: 84px;
   margin: 0;
@@ -443,6 +443,8 @@
 }
 
 #rectPlayer .control .track .thumb {
+  position: absolute;
+  right: 0;
   width: 8px;
   background-color: #9d7eb9;
 }
@@ -456,6 +458,8 @@
   height: 100%;
   margin: 0 0 0 8px;
   text-align: end;
+  width: 72px;
+  overflow: hidden;
 }
 
 #rectPlayer .control .time p {
