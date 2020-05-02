@@ -2,6 +2,10 @@
  *
  */
 interface Window {
+    webkitAudioContext: any;
+    mozAudioContext: any;
+    msAudioContext: any;
+
     attachEvent: Function;
     opera: Function;
 }

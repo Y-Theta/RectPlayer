@@ -184,6 +184,214 @@ exports.PlayMode = PlayMode;
 
 /***/ }),
 
+/***/ "./RectPlayer/NeteaseCore.ts":
+/*!***********************************!*\
+  !*** ./RectPlayer/NeteaseCore.ts ***!
+  \***********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+/**
+ *
+ * @Y_Theta http://blog.y-theta.cn
+ *
+ * PlayerCoreContract
+ *
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
+var PlayerModel_1 = __webpack_require__(/*! ./Model/PlayerModel */ "./RectPlayer/Model/PlayerModel.ts");
+var Tasks_1 = __webpack_require__(/*! ./dependence/Tasks */ "./RectPlayer/dependence/Tasks.ts");
+/** 网易云音乐资源 */
+var NeteaseCore = /** @class */ (function () {
+    function NeteaseCore() {
+        //#endregion
+        this._playlist = null;
+        this._loaded = false;
+        this._timeout = 200; //单首歌url获取超时 平均
+        this._timeouttimer = 0;
+    }
+    /** 初始化播放列表 */
+    NeteaseCore.prototype.Init = function (url, callback) {
+        var _this = this;
+        var id = 0;
+        if (typeof url == "string") {
+            if (!/[^0-9]/.exec(url)) {
+                id = Number.parseInt(url);
+            }
+            else {
+                return;
+            }
+        }
+        else {
+            id = url;
+        }
+        Tasks_1.Tasks.Ajax({
+            url: NeteaseCore._playlistapi + "id=" + id,
+            prepare: function () {
+                Utils_1.Utils.Log("playlist : " + id);
+            },
+            success: function (args) {
+                _this._playlist = new PlayerModel_1.PlayList();
+                var orilist = null;
+                try {
+                    var pl_1 = _this._playlist;
+                    orilist = JSON.parse(args.stepresult);
+                    if (orilist && orilist.code && orilist.code === 200) {
+                        var oripl = orilist.playlist;
+                        pl_1.avatarUrl = oripl.coverImgUrl;
+                        pl_1.nickname = oripl.name;
+                        pl_1.signature = oripl.id;
+                        pl_1.tracks = new Array();
+                        oripl.tracks.forEach(function (t) {
+                            pl_1.tracks.push({
+                                id: t.id,
+                                name: t.name,
+                                src: null,
+                                al: {
+                                    id: t.al.id,
+                                    name: t.al.name,
+                                    url: t.al.picUrl,
+                                },
+                                ar: _this.getauthor(t.ar),
+                                valid: true
+                            });
+                        });
+                    }
+                }
+                catch (_a) { }
+                callback(_this._playlist);
+            },
+        }).Execute();
+    };
+    /** 更新播放列表 */
+    NeteaseCore.prototype.Update = function (callback, ids) {
+        var _this = this;
+        var updatelist = null;
+        if (ids != undefined) {
+            updatelist = [];
+            typeof ids == "number" ? updatelist.push(ids) : updatelist.concat(ids);
+        }
+        var updatetask = [];
+        if (updatelist) {
+            updatelist.forEach(function (v) {
+                var track = _this._playlist.tracks[v];
+                updatetask.push(_this.ajaxsongsrc(track));
+            });
+        }
+        else {
+            this._playlist.tracks.forEach(function (v) {
+                updatetask.push(_this.ajaxsongsrc(v));
+            });
+        }
+        Tasks_1.Tasks.WaitAll(updatetask, function () { return callback(_this._playlist); }, null, Tasks_1.TaskOrder.Default);
+    };
+    NeteaseCore.prototype.Add = function (url, callback, pos) { };
+    NeteaseCore.prototype.Remove = function (ids, callback) { };
+    /** 更新单曲的音频源的任务 */
+    NeteaseCore.prototype.ajaxsongsrc = function (track) {
+        return Tasks_1.Tasks.Ajax({
+            url: NeteaseCore._tracksrcapi + "id=" + track.id + "&br=320000",
+            prepare: function () {
+                Utils_1.Utils.Log("Song - s -" + track.id);
+            },
+            success: function (args) {
+                Utils_1.Utils.Log("Song - e -" + track.id);
+                var url = null;
+                try {
+                    url = JSON.parse(args.stepresult).data[0].url;
+                }
+                catch (_a) { }
+                track.valid = !!url;
+                track.src = url;
+            },
+        });
+    };
+    // private getneteasePlayListbyID(id: number) {
+    //     let orilist: any = null;
+    //     Utils.Ajax({
+    //         async: true,
+    //         url: "http://api.y-theta.cn/Netease/playlist/detail?id=" + id,
+    //         success: (data: string) => {
+    //             try {
+    //                 orilist = JSON.parse(data);
+    //             } catch {}
+    //             if (orilist && orilist.code && orilist.code === 200) {
+    //                 let oripl = orilist.playlist;
+    //                 let pl = new PlayList();
+    //                 pl.avatarUrl = oripl.coverImgUrl;
+    //                 pl.nickname = oripl.name;
+    //                 pl.signature = oripl.id;
+    //                 pl.tracks = new Array<Track>();
+    //                 this.Playlist = pl;
+    //                 oripl.tracks.forEach((t: any) => {
+    //                     pl.tracks.push({
+    //                         id: t.id,
+    //                         name: t.name,
+    //                         src: null,
+    //                         al: {
+    //                             id: t.al.id,
+    //                             name: t.al.name,
+    //                             url: t.al.picUrl,
+    //                         },
+    //                         ar: this.getauthor(t.ar),
+    //                     });
+    //                 });
+    //                 pl.tracks.forEach((t) => {
+    //                     Utils.Ajax({
+    //                         async: true,
+    //                         url: "http://api.y-theta.cn/Netease/music/url?id=" + t.id + "&br=128000",
+    //                         success: (data: string) => {
+    //                             Utils.Log("Song : " + Utils.PadLeft(t.name, 16) + "[ Fetched ]");
+    //                             t.src = JSON.parse(data).data[0].url;
+    //                         },
+    //                         failed: (status: number) => {
+    //                             Utils.Log(status);
+    //                         },
+    //                         prepare: () => {
+    //                             Utils.Log("Song : " + Utils.PadLeft(t.name, 16) + "[ Fetching ]");
+    //                         },
+    //                     });
+    //                 });
+    //                 this._timeouttimer = this._timeout * pl.tracks.length;
+    //                 setTimeout(this.waitAsync.bind(this), 100);
+    //             } else {
+    //                 Utils.Log("Playlist Load Failed! Please try later or check if the id is right ");
+    //             }
+    //         },
+    //         failed: (status: number) => {
+    //             Utils.Log("Playlist Load Failed!" + status);
+    //         },
+    //         prepare: () => {
+    //             this.Loaded = false;
+    //             this.Timeout = false;
+    //             Utils.Log("Getting Playlist");
+    //         },
+    //     });
+    // }
+    NeteaseCore.prototype.getauthor = function (ars) {
+        var arr = new Array();
+        ars.forEach(function (ar) {
+            arr.push({
+                id: ar.id,
+                name: ar.name,
+            });
+        });
+        return arr;
+    };
+    //#region
+    NeteaseCore._apiurl = "http://api.y-theta.cn/Netease";
+    NeteaseCore._playlistapi = NeteaseCore._apiurl + "/playlist/detail?";
+    NeteaseCore._tracksrcapi = NeteaseCore._apiurl + "/music/url?";
+    return NeteaseCore;
+}());
+exports.NeteaseCore = NeteaseCore;
+
+
+/***/ }),
+
 /***/ "./RectPlayer/RectPlayer.ts":
 /*!**********************************!*\
   !*** ./RectPlayer/RectPlayer.ts ***!
@@ -205,51 +413,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
 var Tasks_1 = __webpack_require__(/*! ./dependence/Tasks */ "./RectPlayer/dependence/Tasks.ts");
 var RectplayerTemplateResolver_1 = __webpack_require__(/*! ./RectplayerTemplateResolver */ "./RectPlayer/RectplayerTemplateResolver.ts");
+var NeteaseCore_1 = __webpack_require__(/*! ./NeteaseCore */ "./RectPlayer/NeteaseCore.ts");
 var RectPlayer = /** @class */ (function () {
-    /**
-     * 获取播放列表
-     */
-    // private getPlayList(id: string | number) {
-    //     if (this._srcResolver) this._srcResolver.Init(id);
-    //     var s: Action<string, string, string> = null;
-    // }
-    /**
-     * 异步加载依赖文件
-     */
-    // private loadDependenceAsync() {
-    //     let dependencefile: Array<string> = [
-    //         Utils.Path() + "/less.min.js",
-    //         Utils.Path("resource") + "/javascript/lib/anime.min.js",
-    //     ];
-    //     dependencefile.forEach((element) => {
-    //         this._scriptcache.set(element, null);
-    //         Utils.Ajax({
-    //             async: true,
-    //             url: element,
-    //             prepare: () => {},
-    //             success: (data: string) => {
-    //                 this._scriptcache.set(element, data);
-    //             },
-    //             failed: (status: number) => {
-    //                 Utils.Log("faild : " + element + "  code " + status);
-    //             },
-    //         });
-    //     });
-    //     this.waitAsync();
-    // }
-    /**
-     * 异步等待文件加载完成
-     */
-    // private waitAsync() {
-    //     let fecthed = true;
-    //     this._scriptcache.forEach((v) => {
-    //         if (v == null || v == "") fecthed = false;
-    //     });
-    //     if (!fecthed) setTimeout(this.waitAsync.bind(this), 200);
-    //     else {
-    //         this._loaded = true;
-    //     }
-    // }
     /**
      * 更改播放器的播放模式
      * @param mode
@@ -263,57 +428,6 @@ var RectPlayer = /** @class */ (function () {
     //         this._srcResolver = new NeteaseCore();
     //     } else if (this._mode === "LocalFile") {
     //         this._srcResolver = new LocalCore();
-    //     }
-    // }
-    /**
-     * 解析模板并将其加载到当前页面中
-     */
-    // public TryResolve() {
-    //     /**
-    //      * 确认依赖加载完成
-    //      */
-    //     this.resolve();
-    // }
-    /**
-     *
-     */
-    // private resolve() {
-    //     if (!this._loaded) {
-    //         setTimeout(this.resolve.bind(this), 200);
-    //     } else {
-    //         // 请求样式页
-    //         Utils.Ajax({
-    //             async: true,
-    //             url: Utils.Path() + "/template/style.less",
-    //             prepare: () => {
-    //                 Utils.Log("GetTemplate Less !");
-    //             },
-    //             success: (data: string) => {
-    //                 less.render(data, (e, o) => {
-    //                     let style = document.createElement("style");
-    //                     style.type = "text/css";
-    //                     style.innerHTML = o.css;
-    //                     document.getElementsByTagName("head").item(0).appendChild(style);
-    //                 });
-    //             },
-    //             failed: () => {
-    //                 Utils.Log("Faild !");
-    //             },
-    //         });
-    //         //请求模板
-    //         Utils.Ajax({
-    //             async: true,
-    //             url: Utils.Path() + "/template/Template.xml",
-    //             prepare: () => {
-    //                 Utils.Log("GetTemplate !");
-    //             },
-    //             success: (data: string) => {
-    //                 this._async ? this.loadlistAsync(data) : this.loadlist(data);
-    //             },
-    //             failed: () => {
-    //                 Utils.Log("Faild !");
-    //             },
-    //         });
     //     }
     // }
     // private loadlist(data: string) {
@@ -347,11 +461,31 @@ var RectPlayer = /** @class */ (function () {
         this._core = null;
         //#endregion
         //#region Properties
+        this._listflag = false;
+        this._panelflag = false;
+        this._mute = false;
+        this._playing = null;
+        this._enableresolve = true;
+        this._volume = 0;
+        this._volumebak = 0;
+        this._volumeref = 6000;
+        this._srcid = null;
+        this._playstack = null;
         this._playlist = null;
+        this._playerdom = null;
         this._playcontrol = null;
+        /** AudioResolve */
+        this._audiocontext = null;
+        this._source = null;
+        this._gain = null;
+        this._analyser = null;
+        this._analyzeInterval = null;
+        this._resolvedarrbuffer = null;
         Utils_1.Utils._enablelog = true;
-        this._core;
         this._resolver = new RectplayerTemplateResolver_1.DefaultTemplateResolver();
+        this._core = new NeteaseCore_1.NeteaseCore();
+        this._srcid = option.PlaylistId;
+        this._playstack = [];
         Utils_1.Utils.Log("\\ RectPlayer  1.0.0 \n\\ @Y_Theta \n\\ http:\\\\blog.y-theta.com \n\\ Starting ....");
     }
     //#endregion
@@ -365,15 +499,11 @@ var RectPlayer = /** @class */ (function () {
     RectPlayer.prototype.SwitchMode = function (mode) { };
     RectPlayer.prototype.About = function () { };
     //#endregion
+    /** 初始化播放器 */
     RectPlayer.prototype.Init = function () {
-        var _this = this;
         //加载依赖文件
-        var dependencefile = [
-            Utils_1.Utils.Path() + "/less.min.js",
-            Utils_1.Utils.Path("resource") + "/javascript/lib/anime.min.js",
-        ];
         var loadtasks = [];
-        dependencefile.forEach(function (element) {
+        [Utils_1.Utils.Path() + "/less.min.js", Utils_1.Utils.Path("resource") + "/javascript/lib/anime.min.js"].forEach(function (element) {
             loadtasks.push(Tasks_1.Tasks.Ajax({
                 url: element,
                 prepare: function () { return Utils_1.Utils.Log("loading ... " + element); },
@@ -381,34 +511,258 @@ var RectPlayer = /** @class */ (function () {
                 failed: function (arg) { return Utils_1.Utils.Log(arg.stepresult + " failed"); },
             }));
         });
-        Tasks_1.Tasks.WaitAll(loadtasks, function (all, allres) {
-            //加载模板和样式
-            var temptask = [];
-            temptask.push(Tasks_1.Tasks.Ajax({
-                url: Utils_1.Utils.Path() + "/template/style.less",
-                prepare: function () { return Utils_1.Utils.Log("GetTemplate Less :" + Utils_1.Utils.Path() + "/template/style.less"); },
-            }));
-            temptask.push(Tasks_1.Tasks.Ajax({
-                url: Utils_1.Utils.Path() + "/template/Template.xml",
-                prepare: function () { return Utils_1.Utils.Log("GetTemplate Html :" + Utils_1.Utils.Path() + "/template/Template.xml"); },
-            }));
-            Tasks_1.Tasks.WaitAll(temptask, function (all, allres) {
-                if (allres[0]) {
-                    less.render(allres[0], function (e, o) {
-                        var style = document.createElement("style");
-                        style.type = "text/css";
-                        style.innerHTML = o.css;
-                        document.getElementsByTagName("head").item(0).appendChild(style);
-                    });
-                }
-                if (allres[1]) {
-                    _this._resolver.ResloveTemplate(allres[1], function (c, dom) {
-                        _this._playcontrol = c;
-                        document.body.appendChild(dom);
-                    });
-                }
-            }, null, Tasks_1.TaskOrder.Sequence);
+        Tasks_1.Tasks.WaitAll(loadtasks, this.loadtemplate.bind(this));
+    };
+    /** 加载模板 */
+    RectPlayer.prototype.loadtemplate = function () {
+        var lesstask = Tasks_1.Tasks.Ajax({
+            url: Utils_1.Utils.Path() + "/template/style.less",
+            prepare: function () { return Utils_1.Utils.Log("GetTemplate Less :" + Utils_1.Utils.Path() + "/template/style.less"); },
         });
+        var xmltask = Tasks_1.Tasks.Ajax({
+            url: Utils_1.Utils.Path() + "/template/Template.xml",
+            prepare: function () { return Utils_1.Utils.Log("GetTemplate Html :" + Utils_1.Utils.Path() + "/template/Template.xml"); },
+        });
+        Tasks_1.Tasks.WaitAll([lesstask, xmltask], this.rendertemplate.bind(this), null, Tasks_1.TaskOrder.Sequence);
+    };
+    /** 渲染模板 绑定控制器 */
+    RectPlayer.prototype.rendertemplate = function (num, res, timeout) {
+        var _this = this;
+        // Utils.Log((!!timeout ? "timeout" : "succeed") + "  -  " + res.length);
+        if (res[0]) {
+            less.render(res[0], function (e, o) {
+                var style = document.createElement("style");
+                style.type = "text/css";
+                style.innerHTML = o.css;
+                document.getElementsByTagName("head").item(0).appendChild(style);
+            });
+        }
+        if (res[1]) {
+            this._resolver.ResloveTemplate(res[1], function (ctl, dom) {
+                _this._playcontrol = ctl;
+                _this._playerdom = dom;
+                document.body.appendChild(_this._playerdom);
+                /** 获取播放列表信息 */
+                _this._core.Init(_this._srcid, function (pl) {
+                    _this._playlist = pl;
+                    Utils_1.Utils.Log(pl);
+                    _this._resolver.RenderTemplate(_this._playlist, function () {
+                        _this.bindingctl();
+                        /** 获取歌曲url */
+                        _this._core.Update(_this.onlistupdate.bind(_this));
+                    });
+                });
+            });
+        }
+    };
+    /** 播放列表刷新后行为 */
+    RectPlayer.prototype.onlistupdate = function (list) {
+        Utils_1.Utils.Log("Update - list");
+        Utils_1.Utils.Log(this._playlist);
+        /** 加载歌曲列表 */
+        this._resolver.RenderPlaylist(this._playlist.tracks);
+        var firstvalid = this._playlist.tracks.findIndex(function (value) {
+            return value.valid;
+        });
+        this.preparesong(firstvalid);
+    };
+    RectPlayer.prototype.renderlist = function () { };
+    /** 绑定控制节点 */
+    RectPlayer.prototype.bindingctl = function () {
+        var ctl = this._playcontrol;
+        ctl.ctl_listtoogle.onclick = this.listmousetoggle.bind(this);
+        ctl.ctl_paneltoogle.onclick = this.panelmousetoggle.bind(this);
+        ctl.ctl_play.onclick = this.playmousetoggle.bind(this);
+        ctl.source.onplay = this.resolvesrctrack.bind(this);
+        ctl.source.onpause = this.onsourcepause.bind(this);
+        this.pause();
+        ctl.volume_track.onclick = this.volumetrackclick.bind(this);
+        ctl.ctl_mute.onclick = this.volumeclick.bind(this);
+        ctl.volume.onmousewheel = this.volumescroll.bind(this);
+        ctl.volume.addEventListener("DOMMouseScroll", this.volumescroll.bind(this), { passive: true });
+    };
+    //#region 播放列表/控制面板
+    RectPlayer.prototype.listmousetoggle = function (e) {
+        this._listflag = !this._listflag;
+        this.togglelist(this._listflag);
+    };
+    /** 转换播放列表状态 */
+    RectPlayer.prototype.togglelist = function (flag) {
+        if (flag) {
+            this.switchElementStatus(this._playerdom, "list-on", "list-off");
+        }
+        else {
+            this.switchElementStatus(this._playerdom, "list-off", "list-on");
+        }
+    };
+    RectPlayer.prototype.panelmousetoggle = function (e) {
+        this._panelflag = !this._panelflag;
+        this.togglepanel(this._panelflag);
+    };
+    /** 转换控制栏状态 */
+    RectPlayer.prototype.togglepanel = function (flag) {
+        var _this = this;
+        if (flag) {
+            this.switchElementStatus(this._playerdom, "panel-on", "panel-off");
+        }
+        else {
+            if (this._playerdom.classList.contains("list-on")) {
+                this._panelflag = false;
+                this.switchElementStatus(this._playerdom, "list-off", "list-on");
+                setTimeout(function () {
+                    _this.switchElementStatus(_this._playerdom, "panel-off", "panel-on");
+                }, 240);
+            }
+            else {
+                this.switchElementStatus(this._playerdom, "panel-off", "panel-on");
+            }
+        }
+    };
+    //#endregion
+    //#region 音量调整
+    /** 静音 */
+    RectPlayer.prototype.volumeclick = function (e) {
+        this.setMute(!this._mute);
+    };
+    /** 音量单击调整 */
+    RectPlayer.prototype.volumetrackclick = function (e) {
+        var clip = this._playcontrol.volume.getBoundingClientRect();
+        //   console.log(e, clip);
+        var cw = clip.width / 2;
+        var ch = clip.height / 2;
+        var x1 = e.clientX - clip.x, y1 = e.clientY - clip.y;
+        var angle = Utils_1.Utils.AngleLL({ x: cw, y: 0 }, { x: x1, y: y1 }, { x: cw, y: ch });
+        this._mute = false;
+        this._volume = (angle / 360) * this._volumeref;
+        this.setVolume(this._volume);
+    };
+    /** 音量滚动调整 */
+    RectPlayer.prototype.volumescroll = function (e) {
+        e = e || window.event;
+        var data;
+        if (e.wheelDelta) {
+            //IE/Opera/Chrome
+            data = e.wheelDelta;
+        }
+        else if (e.detail) {
+            //Firefox
+            data = e.detail;
+        }
+        this._mute && this.setMute(false);
+        this._volume += data;
+        this.setVolume(this._volume);
+    };
+    /** 设置静音 */
+    RectPlayer.prototype.setMute = function (flag) {
+        this._mute = flag;
+        Utils_1.Utils.Log("Mute :" + flag);
+        if (flag) {
+            this._volumebak = this._volume;
+            this._volume = 0;
+        }
+        else {
+            this._volume = this._volumebak;
+        }
+        this.setVolume(this._volume);
+    };
+    /** 设置音量 */
+    RectPlayer.prototype.setVolume = function (v) {
+        this._volume = v < this._volumeref ? (v < 0 ? 0 : v) : this._volumeref;
+        var newpath = Utils_1.Utils.Percent(this._volume / this._volumeref, { x: 32, y: 32 }, 24);
+        this._playcontrol.volume_path.setAttribute("d", newpath);
+        var volume = this._playcontrol.volume;
+        if (this._volume == 0) {
+            volume.classList.add("mute");
+        }
+        else {
+            volume.classList.contains("mute") ? volume.classList.remove("mute") : null;
+        }
+        this._gain && (this._gain.gain.value = this._volume / this._volumeref);
+    };
+    //#endregion
+    //#region 播放暂停控制
+    RectPlayer.prototype.playmousetoggle = function (e) {
+        this._playing ? this.pause() : this.resume();
+    };
+    RectPlayer.prototype.resume = function () {
+        if (this._playing)
+            return;
+        this._playing = true;
+        this.switchElementStatus(this._playerdom, "play", "pause");
+        this._playcontrol.source.play();
+    };
+    RectPlayer.prototype.pause = function () {
+        if (this._playing != undefined && !this._playing)
+            return;
+        this._playing = false;
+        this.switchElementStatus(this._playerdom, "pause", "play");
+        this._playcontrol.source.pause();
+    };
+    RectPlayer.prototype.play = function (id) {
+        if (id < 0 ||
+            !!this._playlist ||
+            id >= this._playlist.tracks.length ||
+            id == this._playstack[this._playstack.length - 1])
+            return;
+        this.preparesong(id);
+        this.resume();
+    };
+    RectPlayer.prototype.prve = function () {
+        if (this._playstack.length <= 0)
+            return;
+        //TODO:: select prve
+    };
+    RectPlayer.prototype.next = function () {
+        if (this._playstack.length <= 0)
+            return;
+        //TODO:: select next
+    };
+    RectPlayer.prototype.preparesong = function (id) {
+        this._playstack.push(id);
+        this._resolver.UpdateUI(this._playlist.tracks[id], this._playstack);
+    };
+    //#endregion
+    //#region 音频可视化
+    RectPlayer.prototype.resolvesrctrack = function () {
+        if (!this._audiocontext) {
+            this._audiocontext = this.getaudiocontext();
+            this._source = this._audiocontext.createMediaElementSource(this._playcontrol.source);
+            this._gain = this._audiocontext.createGain();
+            this._analyser = this._audiocontext.createAnalyser();
+            this._analyser.fftSize = 128;
+            this._analyser.smoothingTimeConstant = 0.8;
+            this._source.connect(this._gain);
+            this._gain.connect(this._analyser);
+            this._analyser.connect(this._audiocontext.destination);
+            this._resolvedarrbuffer = new Uint8Array(this._analyser.frequencyBinCount);
+        }
+        if (this._enableresolve) {
+            this._analyzeInterval = setInterval(this.renderresolve.bind(this), 100);
+        }
+    };
+    RectPlayer.prototype.onsourcepause = function () {
+        if (this._analyzeInterval) {
+            clearInterval(this._analyzeInterval);
+            this._analyzeInterval = null;
+        }
+    };
+    RectPlayer.prototype.renderresolve = function () {
+        this._analyser.getByteFrequencyData(this._resolvedarrbuffer);
+        Utils_1.Utils.Log(this._resolvedarrbuffer);
+    };
+    RectPlayer.prototype.getaudiocontext = function () {
+        window.AudioContext =
+            window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.msAudioContext;
+        try {
+            return new AudioContext();
+        }
+        catch (e) {
+            console.log(e);
+        }
+    };
+    //#endregion
+    RectPlayer.prototype.switchElementStatus = function (ctl, state1, state2) {
+        Utils_1.Utils.SwitchElementStatus(ctl, state1, state2);
     };
     return RectPlayer;
 }());
@@ -444,16 +798,6 @@ var DefaultTemplateResolver = /** @class */ (function () {
         this._listtemplate = null;
         this._control = null;
         this._playlist = null;
-        this._liststatus = false;
-        this._panelstatus = false;
-        this._mute = false;
-        this._playing = true;
-        this._songid = -1;
-        this._lastsongid = -1;
-        this._playerctl = new Map();
-        this._volume = 0;
-        this._volumebak = 0;
-        this._volumemax = 6000;
         this._playmode = PlayerModel_1.PlayMode.normal;
         this._playmodeloop = [PlayerModel_1.PlayMode.normal, PlayerModel_1.PlayMode.repeat, PlayerModel_1.PlayMode.repeatone, PlayerModel_1.PlayMode.random];
         this._maxtrackwidth = 0;
@@ -468,7 +812,6 @@ var DefaultTemplateResolver = /** @class */ (function () {
      */
     DefaultTemplateResolver.prototype.ResloveTemplate = function (oritemplate, callback) {
         //Utils.Log(XML.xml2js(oritemplate));
-        Utils_1.Utils.Log(JSON.stringify(oritemplate));
         this._playerelement = document.createElement("div");
         this._playerelement.id = "rectPlayer";
         var result = /<player>([\s\S]*?)<\/player>[\s\S]*?<listitem>([\s\S]*?)<\/listitem>/im.exec(oritemplate);
@@ -506,10 +849,11 @@ var DefaultTemplateResolver = /** @class */ (function () {
         callback(this._control, this._playerelement);
     };
     DefaultTemplateResolver.prototype.RenderTemplate = function (data, callback) {
-        // this._playlist = data;
+        this._playlist = data.tracks;
         // this._songid = 0;
         // this._lastsongid = 0;
         // this.updateUI(this._songid);
+        callback(null);
     };
     DefaultTemplateResolver.prototype.RenderPlaylist = function (list) {
         var _this = this;
@@ -517,16 +861,18 @@ var DefaultTemplateResolver = /** @class */ (function () {
         if (this._playlist) {
             this._control.list.innerHTML = null;
             this._playlist.forEach(function (v, i) {
-                if (v.src != null) {
-                    var listitem = Utils_1.Utils.Dom(_this._listtemplate);
-                    var liid = listitem.querySelector("#id");
-                    liid.innerHTML = "" + (i + 1);
-                    liid.removeAttribute("id");
-                    var liname = listitem.querySelector("#info");
-                    liname.innerHTML = "" + v.name + (v.ar[0] && "-" + v.ar[0].name);
-                    liname.removeAttribute("id");
-                    _this._control.list.appendChild(listitem.childNodes[0]);
+                var listitem = Utils_1.Utils.Dom(_this._listtemplate);
+                var liid = listitem.querySelector("#id");
+                liid.innerHTML = "" + (i + 1);
+                liid.removeAttribute("id");
+                var liname = listitem.querySelector("#info");
+                liname.innerHTML = "" + v.name + (v.ar[0] && "-" + v.ar[0].name);
+                liname.removeAttribute("id");
+                if (!v.valid) {
+                    var li = listitem.querySelector("li");
+                    li.classList.add("unavailable");
                 }
+                _this._control.list.appendChild(listitem.childNodes[0]);
             });
         }
     };
@@ -571,17 +917,15 @@ var DefaultTemplateResolver = /** @class */ (function () {
     /**
      *
      */
-    DefaultTemplateResolver.prototype.updateUI = function (id) {
-        if (id < this._playlist.length && this._playlist[id]) {
-            this._control.cover_avatar.style.backgroundImage = "url(" + this._playlist[id].al.url + ")";
-            this._control.source.setAttribute("src", this._playlist[id].src);
-            this._control.name.innerHTML = this._playlist[id].name;
-            this._control.author.innerHTML = this._playlist[id].ar[0].name;
-            var children = this._control.list.childNodes;
-            children.item(this._lastsongid).classList.remove("playing");
-            children.item(id).classList.remove("selected");
-            children.item(id).classList.add("playing");
-        }
+    DefaultTemplateResolver.prototype.UpdateUI = function (track, stack) {
+        this._control.cover_avatar.style.backgroundImage = "url(" + track.al.url + ")";
+        this._control.source.setAttribute("src", track.src);
+        this._control.name.innerHTML = track.name;
+        this._control.author.innerHTML = track.ar[0].name;
+        var children = this._control.list.childNodes;
+        stack.length >= 2 && children.item(stack[stack.length - 2]).classList.remove("playing");
+        children.item(stack[stack.length - 1]).classList.remove("selected");
+        children.item(stack[stack.length - 1]).classList.add("playing");
     };
     return DefaultTemplateResolver;
 }());
@@ -631,7 +975,7 @@ var Utils = /** @class */ (function () {
      * 输出函数
      */
     Utils.Log = function (obj) {
-        Utils._enablelog ? console.log(obj) : null;
+        Utils._enablelog ? obj && console.log(obj) : null;
     };
     /* 质朴长存法  by lifesinger */
     Utils.PadLeft = function (num, n) {
@@ -751,7 +1095,6 @@ exports.Utils = Utils;
 "use strict";
 /* WEBPACK VAR INJECTION */(function(__extends) {
 Object.defineProperty(exports, "__esModule", { value: true });
-var Utils_1 = __webpack_require__(/*! ../Utils */ "./RectPlayer/Utils.ts");
 /**
  * 任务列表中的任务执行顺序
  */
@@ -796,7 +1139,6 @@ var BaseAsyncTask = /** @class */ (function () {
     function BaseAsyncTask() {
     }
     BaseAsyncTask.prototype.Execute = function () { };
-    ;
     BaseAsyncTask.prototype.Wait = function (task) {
         var oricall = task.Callback;
         task.Callback = (function (that) {
@@ -917,7 +1259,7 @@ var AjaxTask = /** @class */ (function (_super) {
             this._xhr.onreadystatechange = function () {
                 if (_this._xhr.readyState === 4) {
                     // TODO:: 访问服务器文件与本地文件分别配置
-                    if (Utils_1.Utils.Path().indexOf("file:///") == 0) {
+                    if (AjaxTask.root().indexOf("file:///") == 0) {
                         if (_this._xhr.responseType === "text")
                             _this.success(_this._xhr.responseText);
                         else
@@ -974,30 +1316,44 @@ var Tasks = /** @class */ (function () {
      * @param step       单个任务执行结果回调
      * @param order      任务执行顺序
      */
-    Tasks.WaitAll = function (asynctasks, callback, step, order) {
+    Tasks.WaitAll = function (asynctasks, callback, step, order, timeout) {
         if (asynctasks) {
             var taskcount_1 = asynctasks.length;
             var resultcollection_1 = new Array();
-            order = order || TaskOrder.Default;
-            if (order == TaskOrder.Sequence) {
+            var ordera = order || TaskOrder.Default;
+            var timeouted_1 = [];
+            timeouted_1.push(false);
+            if (timeout && timeout > 0) {
+                setTimeout(function (t) {
+                    t[0] = true;
+                }, timeout, timeouted_1);
+            }
+            if (ordera == TaskOrder.Sequence) {
                 var i = 0;
                 for (; i < taskcount_1; i++) {
                     if (i + 1 < taskcount_1) {
                         asynctasks[i].Callback = (function (index) {
                             return function (arg) {
-                                resultcollection_1.push(arg.stepresult);
-                                if (arg.abort) {
-                                    callback && callback(index - 1, resultcollection_1);
+                                // Utils.Log(arg.stepresult);
+                                if (timeouted_1[0]) {
+                                    callback && callback(index - 1, resultcollection_1, true);
                                     return;
                                 }
+                                resultcollection_1.push(arg.stepresult);
                                 step && step(index - 1, taskcount_1, arg.stepresult, resultcollection_1, arg.err);
                                 asynctasks[index].Arg.stepresult = arg.stepresult;
+                                asynctasks[index].Arg.abort = timeouted_1[0];
                                 asynctasks[index].Execute();
                             };
                         })(i + 1);
                     }
                     else {
                         asynctasks[i].Callback = function (arg) {
+                            // Utils.Log(arg.stepresult);
+                            if (arg.abort || timeouted_1[0]) {
+                                callback && callback(taskcount_1 - 1, resultcollection_1, timeouted_1[0]);
+                                return;
+                            }
                             resultcollection_1.push(arg.stepresult);
                             step && step(taskcount_1 - 1, taskcount_1, arg.stepresult, resultcollection_1, arg.err);
                             callback && callback(taskcount_1, resultcollection_1);
@@ -1011,15 +1367,26 @@ var Tasks = /** @class */ (function () {
                 asynctasks.forEach(function (at, index) {
                     at.Callback = (function (index) {
                         return function (arg) {
-                            taskcount_1--;
-                            resultcollection_1.push(arg.stepresult);
-                            step && step(index, taskcount_1, arg.stepresult, resultcollection_1, arg.err);
-                            taskcount_1 == 0 && callback && callback(taskcount_1, resultcollection_1);
+                            if (!timeouted_1[0]) {
+                                taskcount_1--;
+                                resultcollection_1.push(arg.stepresult);
+                                step && step(index, taskcount_1, arg.stepresult, resultcollection_1, arg.err);
+                                taskcount_1 == 0 && callback && callback(taskcount_1, resultcollection_1);
+                            }
+                            else {
+                                if (taskcount_1 != 0) {
+                                    callback && callback(taskcount_1, resultcollection_1, true);
+                                    taskcount_1 = 0;
+                                }
+                            }
                         };
                     })(index);
                     at.Execute();
                 });
             }
+        }
+        else {
+            callback(0, null);
         }
     };
     /**

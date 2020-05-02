@@ -20,16 +20,6 @@ class DefaultTemplateResolver implements IResolverContract {
     private _control: RectPlayerControl = null;
     private _playlist: Array<Track> = null;
 
-    private _liststatus: boolean = false;
-    private _panelstatus: boolean = false;
-    private _mute: boolean = false;
-    private _playing: boolean = true;
-    private _songid: number = -1;
-    private _lastsongid: number = -1;
-    private _playerctl = new Map<string, HTMLElement>();
-    private _volume: number = 0;
-    private _volumebak: number = 0;
-    private _volumemax = 6000;
     private _playmode: PlayMode = PlayMode.normal;
     private _playmodeloop: PlayMode[] = [PlayMode.normal, PlayMode.repeat, PlayMode.repeatone, PlayMode.random];
 
@@ -46,7 +36,7 @@ class DefaultTemplateResolver implements IResolverContract {
      */
     public ResloveTemplate(oritemplate: string, callback: ActionD<RectPlayerControl, HTMLElement>) {
         //Utils.Log(XML.xml2js(oritemplate));
-        Utils.Log(JSON.stringify(oritemplate));
+
         this._playerelement = document.createElement("div");
         this._playerelement.id = "rectPlayer";
         let result = /<player>([\s\S]*?)<\/player>[\s\S]*?<listitem>([\s\S]*?)<\/listitem>/im.exec(oritemplate);
@@ -94,29 +84,32 @@ class DefaultTemplateResolver implements IResolverContract {
         callback(this._control, this._playerelement);
     }
 
-    public RenderTemplate(data: PlayList, callback: ActionD<RectPlayerControl, HTMLElement>) {
-        // this._playlist = data;
-        
+    public RenderTemplate(data: PlayList, callback: Action<any>) {
+        this._playlist = data.tracks;
+
         // this._songid = 0;
         // this._lastsongid = 0;
         // this.updateUI(this._songid);
+        callback(null);
     }
 
-    RenderPlaylist(list: Track[]): void {
+    public RenderPlaylist(list: Track[]): void {
         this._playlist = list;
         if (this._playlist) {
             this._control.list.innerHTML = null;
             this._playlist.forEach((v, i) => {
-                if (v.src != null) {
-                    let listitem = Utils.Dom(this._listtemplate);
-                    let liid = listitem.querySelector("#id");
-                    liid.innerHTML = "" + (i + 1);
-                    liid.removeAttribute("id");
-                    let liname = listitem.querySelector("#info");
-                    liname.innerHTML = "" + v.name + (v.ar[0] && "-" + v.ar[0].name);
-                    liname.removeAttribute("id");
-                    this._control.list.appendChild(listitem.childNodes[0]);
+                let listitem = Utils.Dom(this._listtemplate);
+                let liid = listitem.querySelector("#id");
+                liid.innerHTML = "" + (i + 1);
+                liid.removeAttribute("id");
+                let liname = listitem.querySelector("#info");
+                liname.innerHTML = "" + v.name + (v.ar[0] && "-" + v.ar[0].name);
+                liname.removeAttribute("id");
+                if (!v.valid) {
+                    let li = listitem.querySelector("li");
+                    li.classList.add("unavailable");
                 }
+                this._control.list.appendChild(listitem.childNodes[0]);
             });
         }
     }
@@ -165,50 +158,16 @@ class DefaultTemplateResolver implements IResolverContract {
     /**
      *
      */
-    private updateUI(id: number) {
-        if (id < this._playlist.length && this._playlist[id]) {
-            this._control.cover_avatar.style.backgroundImage = "url(" + this._playlist[id].al.url + ")";
-            this._control.source.setAttribute("src", this._playlist[id].src);
-            this._control.name.innerHTML = this._playlist[id].name;
-            this._control.author.innerHTML = this._playlist[id].ar[0].name;
-            let children = this._control.list.childNodes;
-            (children.item(this._lastsongid) as HTMLElement).classList.remove("playing");
-            (children.item(id) as HTMLElement).classList.remove("selected");
-            (children.item(id) as HTMLElement).classList.add("playing");
-        }
+    public UpdateUI(track: Track, stack: number[]) {
+        this._control.cover_avatar.style.backgroundImage = "url(" + track.al.url + ")";
+        this._control.source.setAttribute("src", track.src);
+        this._control.name.innerHTML = track.name;
+        this._control.author.innerHTML = track.ar[0].name;
+        let children = this._control.list.childNodes;
+        stack.length >= 2 &&  (children.item(stack[stack.length - 2]) as HTMLElement).classList.remove("playing");
+        (children.item(stack[stack.length - 1]) as HTMLElement).classList.remove("selected");
+        (children.item(stack[stack.length - 1]) as HTMLElement).classList.add("playing");
     }
-
-    // //#region 播放列表/控制面板
-    // private openlist(e: MouseEvent) {
-    //     this._liststatus = !this._liststatus;
-    //     if (this._liststatus) {
-    //         this.switchElementStatus(this._playerelement, "list-on", "list-off");
-    //     } else {
-    //         this.switchElementStatus(this._playerelement, "list-off", "list-on");
-    //     }
-    // }
-
-    // private openctlpanel(e: MouseEvent) {
-    //     this._panelstatus = !this._panelstatus;
-    //     if (this._panelstatus) {
-    //         this.switchElementStatus(this._playerelement, "panel-on", "panel-off");
-    //     } else {
-    //         if (this._playerelement.classList.contains("list-on")) {
-    //             this._liststatus = false;
-    //             this.switchElementStatus(this._playerelement, "list-off", "list-on");
-    //             setTimeout(
-    //                 (that) => {
-    //                     that.switchElementStatus(this._playerelement, "panel-off", "panel-on");
-    //                 },
-    //                 240,
-    //                 this
-    //             );
-    //         } else {
-    //             this.switchElementStatus(this._playerelement, "panel-off", "panel-on");
-    //         }
-    //     }
-    // }
-    // //#endregion
 
     // //#region 音量调整
     // /**

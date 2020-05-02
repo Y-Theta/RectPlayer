@@ -11,7 +11,7 @@ type TaskStepCallback = (id: number, all: number, stepresult: any, allresult: an
 /**
  * 异步任务结果回调委托
  */
-type TasksCallback = (all: number, allresult: any[]) => void;
+type TasksCallback = (all: number, allresult: any[], timeout?: boolean) => void;
 /**
  * 设置请求头部
  */
@@ -123,7 +123,7 @@ class BaseAsyncTask implements IAsyncTask {
     public FrendlyName: string;
     public Callback: TasksHandle;
     public Arg: TaskArgs;
-    public Execute(){};
+    public Execute() {}
     public Wait(task: IAsyncTask) {
         let oricall = task.Callback;
         task.Callback = ((that: IAsyncTask) => {
@@ -249,7 +249,7 @@ class AjaxTask extends BaseAsyncTask {
             this._xhr.onreadystatechange = () => {
                 if (this._xhr.readyState === 4) {
                     // TODO:: 访问服务器文件与本地文件分别配置
-                    if (Utils.Path().indexOf("file:///") == 0) {
+                    if (AjaxTask.root().indexOf("file:///") == 0) {
                         if (this._xhr.responseType === "text") this.success(this._xhr.responseText);
                         else this.success(this._xhr.response);
                     } else {
@@ -263,7 +263,7 @@ class AjaxTask extends BaseAsyncTask {
                     this.complete(this._xhr);
                 }
             };
-            this._xhr.open(option.method || "GET", option.url, option.async == false ? false : true );
+            this._xhr.open(option.method || "GET", option.url, option.async == false ? false : true);
             option.onsetheader && option.onsetheader(this._xhr);
             this._xhr.send(option.data || null);
         }
@@ -303,30 +303,49 @@ class Tasks {
         asynctasks: IAsyncTask[],
         callback: TasksCallback,
         step?: TaskStepCallback,
-        order?: TaskOrder
+        order?: TaskOrder,
+        timeout?: number
     ) {
         if (asynctasks) {
             let taskcount = asynctasks.length;
             let resultcollection: any[] = new Array<any>();
-            order = order || TaskOrder.Default;
-            if (order == TaskOrder.Sequence) {
+            let ordera = order || TaskOrder.Default;
+            let timeouted: boolean[] = [];
+            timeouted.push(false);
+            if (timeout && timeout > 0) {
+                setTimeout(
+                    (t) => {
+                        t[0] = true;
+                    },
+                    timeout,
+                    timeouted
+                );
+            }
+            if (ordera == TaskOrder.Sequence) {
                 let i = 0;
                 for (; i < taskcount; i++) {
                     if (i + 1 < taskcount) {
                         asynctasks[i].Callback = ((index) => {
                             return (arg: TaskArgs) => {
-                                resultcollection.push(arg.stepresult);
-                                if (arg.abort) {
-                                    callback && callback(index - 1, resultcollection);
+                                // Utils.Log(arg.stepresult);
+                                if (timeouted[0]) {
+                                    callback && callback(index - 1, resultcollection, true);
                                     return;
                                 }
+                                resultcollection.push(arg.stepresult);
                                 step && step(index - 1, taskcount, arg.stepresult, resultcollection, arg.err);
                                 asynctasks[index].Arg.stepresult = arg.stepresult;
+                                asynctasks[index].Arg.abort = timeouted[0];
                                 asynctasks[index].Execute();
                             };
                         })(i + 1);
                     } else {
                         asynctasks[i].Callback = (arg: TaskArgs) => {
+                            // Utils.Log(arg.stepresult);
+                            if (arg.abort || timeouted[0]) {
+                                callback && callback(taskcount - 1, resultcollection, timeouted[0]);
+                                return;
+                            }
                             resultcollection.push(arg.stepresult);
                             step && step(taskcount - 1, taskcount, arg.stepresult, resultcollection, arg.err);
                             callback && callback(taskcount, resultcollection);
@@ -339,15 +358,24 @@ class Tasks {
                 asynctasks.forEach((at, index) => {
                     at.Callback = ((index) => {
                         return (arg: TaskArgs) => {
-                            taskcount--;
-                            resultcollection.push(arg.stepresult);
-                            step && step(index, taskcount, arg.stepresult, resultcollection, arg.err);
-                            taskcount == 0 && callback && callback(taskcount, resultcollection);
+                            if (!timeouted[0]) {
+                                taskcount--;
+                                resultcollection.push(arg.stepresult);
+                                step && step(index, taskcount, arg.stepresult, resultcollection, arg.err);
+                                taskcount == 0 && callback && callback(taskcount, resultcollection);
+                            } else {
+                                if (taskcount != 0) {
+                                    callback && callback(taskcount, resultcollection, true);
+                                    taskcount = 0;
+                                }
+                            }
                         };
                     })(index);
                     at.Execute();
                 });
             }
+        } else {
+            callback(0, null);
         }
     }
 

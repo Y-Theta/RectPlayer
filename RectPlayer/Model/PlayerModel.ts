@@ -17,6 +17,7 @@ class Track {
     public src: string;
     public ar: Array<Author>;
     public al: Avatar;
+    public valid: boolean;
 }
 
 /**

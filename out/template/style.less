@@ -146,25 +146,26 @@
 // #endregion
 
 // #region Animations
-.keyframes (toggle_panel_on, {0% {transform: translateX(@xoffset) ;} 100% {transform: translateX(@coverwidth) ;}});
+.keyframes (toggle_panel_on, {0% {transform: translateX(@xoffset) ;} 100% {transform: translateX(@coverwidth) ;}});;
 
-.keyframes (toggle_panel_off, {0% {transform: translateX(@coverwidth) ;} 100% {transform: translateX(@xoffset) ;}});
+.keyframes (toggle_panel_off, {0% {transform: translateX(@coverwidth) ;} 100% {transform: translateX(@xoffset) ;}});;
 
 .keyframes (clip_on, {0% {width: @collapsewidth + @coverwidth;} 100% {width: @flexwidth + @coverwidth;}});
 
 .keyframes (clip_off, {0% {width: @flexwidth + @coverwidth;} 100% {width: @collapsewidth + @coverwidth;}});
 
-.keyframes (toggle_list_on, {0% {transform: translateY(@yoffset) ;} 100% {transform: translateY(-@coverheight) ;}});
+.keyframes (toggle_list_on, {0% {transform: translateY(@yoffset) ;} 100% {transform: translateY(-@coverheight) ;}});;
 
-.keyframes (toggle_list_off, {0% {transform: translateY(-@coverheight) ;} 100% {transform: translateY(@yoffset) ;}});
+.keyframes (toggle_list_off, {0% {transform: translateY(-@coverheight) ;} 100% {transform: translateY(@yoffset) ;}});;
 
-.keyframes (list_clip_on, {0% {height: @coverheight;} 100% {height: @coverheight + @listheight;width: @flexwidth + 1;}});
+.keyframes
+    (list_clip_on, {0% {height: @coverheight;} 100% {height: @coverheight + @listheight;width: @flexwidth + 1;}});
 
 .keyframes
     (
         list_clip_off,
         {0% {height: @coverheight + @listheight;width: @flexwidth + 1;} 100% {height: @coverheight;width: 0;}}
-    );
+    );;
 // #endregion
 
 // #region @PlayerStyle
@@ -286,7 +287,8 @@
         }
 
         &:hover {
-            .avatar, .static{
+            .avatar,
+            .static {
                 filter: blur(0.75px);
             }
 
@@ -341,7 +343,7 @@
             max-width: 144px;
             overflow-x: hidden;
             text-overflow: ellipsis;
-            white-space:nowrap;
+            white-space: nowrap;
         }
 
         .author:extend(.rpele .text) {
@@ -563,6 +565,7 @@
             border: none;
 
             li:extend(.flex-row) {
+                cursor: pointer;
                 position: relative;
                 height: @listitemheight;
                 width: 100%;
@@ -594,7 +597,7 @@
                         flex-grow: 1;
                         overflow-x: hidden;
                         text-overflow: ellipsis;
-                        white-space:nowrap;
+                        white-space: nowrap;
                     }
 
                     &:nth-child(4) {
@@ -615,6 +618,15 @@
                     }
                 }
 
+                &.unavailable {
+                    cursor: default;
+                    p {
+                        &:nth-child(3) {
+                            text-decoration: line-through;
+                        }
+                    }
+                }
+
                 &.selected {
                     background-color: #00000020;
                     p {
@@ -628,7 +640,6 @@
                 }
 
                 &.playing {
-                    background-color: #00000020;
                     p {
                         &:nth-child(1) {
                             flex-basis: @listitemselect + 2;

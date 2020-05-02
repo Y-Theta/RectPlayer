@@ -624,6 +624,7 @@
 }
 
 #rectPlayer .list .detail li {
+  cursor: pointer;
   position: relative;
   height: 30px;
   width: 100%;
@@ -687,6 +688,14 @@
   border-bottom: 1px solid #00000040;
 }
 
+#rectPlayer .list .detail li.unavailable {
+  cursor: default;
+}
+
+#rectPlayer .list .detail li.unavailable p:nth-child(3) {
+  text-decoration: line-through;
+}
+
 #rectPlayer .list .detail li.selected {
   background-color: #00000020;
 }
@@ -697,10 +706,6 @@
 
 #rectPlayer .list .detail li.selected p:nth-child(4) {
   flex-basis: 4px;
-}
-
-#rectPlayer .list .detail li.playing {
-  background-color: #00000020;
 }
 
 #rectPlayer .list .detail li.playing p:nth-child(1) {

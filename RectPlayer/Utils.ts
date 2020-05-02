@@ -34,8 +34,8 @@ class Utils {
     /**
      * 输出函数
      */
-    static Log(obj: any) {
-        Utils._enablelog ? console.log(obj) : null;
+    static Log(obj?: any) {
+        Utils._enablelog ? obj && console.log(obj) : null;
     }
 
     /* 质朴长存法  by lifesinger */
