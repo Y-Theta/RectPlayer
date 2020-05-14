@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "module": "CommonJS",
+        //"outDir": "./dist/",
+        //"outFile": "./out/modules/RectPlayer.js",
+        "allowJs": true,
+        "removeComments": false,
+        "sourceMap": false,
+        "strict": true,
+        "strictNullChecks": false,
+        "suppressImplicitAnyIndexErrors": true,
+        //"importHelpers": true,
+        "noEmitHelpers": true,
+        "target": "ES5"
+    },
+    "include": [
+        "./RectPlayer/*.ts",
+        "./RectPlayer/**/*.ts",
+    ],
+    //"files": [
+    //  ".\\RectPlayer\\PlayerModel.ts",
+    //  ".\\RectPlayer\\Utils.ts",
+    //  ".\\RectPlayer\\RectplayerTemplateResolver.ts",
+    //  ".\\RectPlayer\\PlayerCore.ts",
+    //  ".\\RectPlayer\\RectPlayer.ts"
+    //],
+    "exclude": [
+        "node_modules"
+    ]
+}

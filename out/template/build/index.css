@@ -1,0 +1,828 @@
+.no-interact,
+#rectPlayer .control .time {
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.flex-column,
+#rectPlayer .list .lcontrol {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+
+.flex-row,
+#rectPlayer .cpanel,
+#rectPlayer .control .track,
+#rectPlayer .list,
+#rectPlayer .list .detail li {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+}
+
+@-webkit-keyframes toggle_panel_on {
+  0% {
+    transform: translateX(-260px);
+  }
+
+  100% {
+    transform: translateX(84px);
+  }
+}
+
+@keyframes toggle_panel_on {
+  0% {
+    transform: translateX(-260px);
+  }
+
+  100% {
+    transform: translateX(84px);
+  }
+}
+
+@-webkit-keyframes toggle_panel_off {
+  0% {
+    transform: translateX(84px);
+  }
+
+  100% {
+    transform: translateX(-260px);
+  }
+}
+
+@keyframes toggle_panel_off {
+  0% {
+    transform: translateX(84px);
+  }
+
+  100% {
+    transform: translateX(-260px);
+  }
+}
+
+@-webkit-keyframes clip_on {
+  0% {
+    width: 100px;
+  }
+
+  100% {
+    width: 444px;
+  }
+}
+
+@keyframes clip_on {
+  0% {
+    width: 100px;
+  }
+
+  100% {
+    width: 444px;
+  }
+}
+
+@-webkit-keyframes clip_off {
+  0% {
+    width: 444px;
+  }
+
+  100% {
+    width: 100px;
+  }
+}
+
+@keyframes clip_off {
+  0% {
+    width: 444px;
+  }
+
+  100% {
+    width: 100px;
+  }
+}
+
+@-webkit-keyframes toggle_list_on {
+  0% {
+    transform: translateY(98px);
+  }
+
+  100% {
+    transform: translateY(-84px);
+  }
+}
+
+@keyframes toggle_list_on {
+  0% {
+    transform: translateY(98px);
+  }
+
+  100% {
+    transform: translateY(-84px);
+  }
+}
+
+@-webkit-keyframes toggle_list_off {
+  0% {
+    transform: translateY(-84px);
+  }
+
+  100% {
+    transform: translateY(98px);
+  }
+}
+
+@keyframes toggle_list_off {
+  0% {
+    transform: translateY(-84px);
+  }
+
+  100% {
+    transform: translateY(98px);
+  }
+}
+
+@-webkit-keyframes list_clip_on {
+  0% {
+    height: 84px;
+  }
+
+  100% {
+    height: 266px;
+    width: 361px;
+  }
+}
+
+@keyframes list_clip_on {
+  0% {
+    height: 84px;
+  }
+
+  100% {
+    height: 266px;
+    width: 361px;
+  }
+}
+
+@-webkit-keyframes list_clip_off {
+  0% {
+    height: 266px;
+    width: 361px;
+  }
+
+  100% {
+    height: 84px;
+    width: 0;
+  }
+}
+
+@keyframes list_clip_off {
+  0% {
+    height: 266px;
+    width: 361px;
+  }
+
+  100% {
+    height: 84px;
+    width: 0;
+  }
+}
+
+.rpele .text,
+#rectPlayer .control .name,
+#rectPlayer .control .author,
+#rectPlayer .control .time {
+  color: #080808;
+  font-weight: 300;
+  font-size: 8pt;
+}
+
+.svgbtn,
+#rectPlayer .control .volume,
+#rectPlayer .control .playmode,
+#rectPlayer .control .fore,
+#rectPlayer .control .prve,
+#rectPlayer .control .openlist,
+#rectPlayer .list .lcontrol .listadd,
+#rectPlayer .list .lcontrol .listremove,
+#rectPlayer .list .lcontrol .about {
+  position: absolute;
+  display: block;
+}
+
+.svgbtn svg,
+#rectPlayer .control .volume svg,
+#rectPlayer .control .playmode svg,
+#rectPlayer .control .fore svg,
+#rectPlayer .control .prve svg,
+#rectPlayer .control .openlist svg,
+#rectPlayer .list .lcontrol .listadd svg,
+#rectPlayer .list .lcontrol .listremove svg,
+#rectPlayer .list .lcontrol .about svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  stroke: none;
+  fill: #8c8c8c;
+}
+
+.svgbtn:hover svg,
+#rectPlayer .control .volume:hover svg,
+#rectPlayer .control .playmode:hover svg,
+#rectPlayer .control .fore:hover svg,
+#rectPlayer .control .prve:hover svg,
+#rectPlayer .control .openlist:hover svg,
+#rectPlayer .list .lcontrol .listadd:hover svg,
+#rectPlayer .list .lcontrol .listremove:hover svg,
+#rectPlayer .list .lcontrol .about:hover svg {
+  fill: #4c4c4c;
+}
+
+#rectPlayer {
+  display: block;
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  width: 84px;
+  height: 84px;
+  margin: 0;
+  padding: 0;
+}
+
+#rectPlayer * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: block;
+}
+
+#rectPlayer .flex-spring {
+  flex-grow: 1;
+}
+
+#rectPlayer .cover {
+  z-index: 100;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  overflow: hidden;
+}
+
+#rectPlayer .cover .avatar,
+#rectPlayer .cover .static {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-image: none;
+  background-repeat: no-repeat;
+  background-size: cover;
+  -webkit-background-size: cover;
+  -o-background-size: cover;
+  background-position: center center;
+  overflow: hidden;
+}
+
+#rectPlayer .cover .resolve {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+}
+
+#rectPlayer .cover .static {
+  background-image: url(../cover.jpg);
+}
+
+#rectPlayer .cover .ccontrol {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  overflow: hidden;
+  padding: 4px 0 0 0;
+  border: 1px solid black;
+}
+
+#rectPlayer .cover .ccontrol::before {
+  z-index: 101;
+  display: block;
+  position: absolute;
+  border-radius: 42px 42px;
+  content: "";
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  left: 10px;
+  top: 10px;
+  left: 8px;
+  top: 11px;
+  transition: .24s all cubic-bezier(0.23, 1, 0.32, 1);
+  -moz-transition: .24s all cubic-bezier(0.23, 1, 0.32, 1);
+  -webkit-transition: .24s all cubic-bezier(0.23, 1, 0.32, 1);
+  -o-transition: .24s all cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+#rectPlayer .cover .ccontrol svg {
+  z-index: 102;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#rectPlayer .cover .ccontrol .btn {
+  display: none;
+  fill: #ffffffaa;
+}
+
+#rectPlayer .cover .ccontrol .btn:hover {
+  fill: rgba(204, 204, 204, 0.66666667);
+}
+
+#rectPlayer .cover:hover .avatar,
+#rectPlayer .cover:hover .static {
+  filter: blur(0.75px);
+}
+
+#rectPlayer .cover:hover .ccontrol::before {
+  box-shadow: 0 0 32px 2px #000000, 0 0 32px 2px rgba(0, 0, 0, 0.64) inset;
+}
+
+#rectPlayer .cpanelclip {
+  z-index: 91;
+  position: absolute;
+  display: block;
+  height: 84px;
+  width: 100px;
+  overflow: hidden;
+}
+
+#rectPlayer .cpanel {
+  z-index: 90;
+  height: 84px;
+  width: 360px;
+  overflow: hidden;
+  position: absolute;
+  background-color: #fefefe;
+  transform: translateX(-260px);
+  -ms-transform: translateX(-260px);
+  -moz-transform: translateX(-260px);
+  -webkit-transform: translateX(-260px);
+  -o-transform: translateX(-260px);
+}
+
+#rectPlayer .handle {
+  position: relative;
+  flex-basis: 16px;
+  height: 100%;
+  background-color: #f4f4f4;
+  border: 1px solid black;
+  border-left: none;
+}
+
+#rectPlayer .control {
+  position: relative;
+  flex: 1;
+  border-top: 1px solid #000000aa;
+  border-bottom: 1px solid #000000aa;
+}
+
+#rectPlayer .control .name {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  font-size: 10pt;
+  max-width: 144px;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#rectPlayer .control .author {
+  position: absolute;
+  font-weight: 200;
+  left: 8px;
+  top: 32px;
+  font-size: xx-small;
+}
+
+#rectPlayer .control .track {
+  position: absolute;
+  height: 12px;
+  width: calc(100% - 2 * 8px);
+  margin: 0 8px;
+  bottom: 4px;
+}
+
+#rectPlayer .control .track div {
+  position: relative;
+  height: 100%;
+}
+
+#rectPlayer .control .track .full {
+  flex: 1;
+  top: 5px;
+  height: 2px;
+  background-color: #83ccba;
+}
+
+#rectPlayer .control .track .loding {
+  position: absolute;
+  width: 80%;
+  background-color: #a3a8a2;
+}
+
+#rectPlayer .control .track .pos {
+  position: absolute;
+  width: 0;
+  margin: 0 8px;
+  background-color: #e5af95;
+}
+
+#rectPlayer .control .track .pos::before {
+  content: " ";
+  position: absolute;
+  height: 100%;
+  width: 8px;
+  margin-left: -8px;
+  background-color: #e5af95;
+}
+
+#rectPlayer .control .track .thumb {
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px 4px;
+  background-color: #9d7eb9;
+  border: 1px solid white;
+}
+
+#rectPlayer .control .track:hover .thumb {
+  border: 1px solid #4a4a4a;
+  background-color: #4a4a4a;
+}
+
+#rectPlayer .control .time {
+  position: relative;
+  height: 100%;
+  line-height: 100%;
+  margin: 0 0 0 8px;
+  vertical-align: top;
+  width: 72px;
+  overflow: hidden;
+}
+
+#rectPlayer .control .time p {
+  display: inline;
+}
+
+#rectPlayer .control .volume {
+  right: 8px;
+  bottom: 24px;
+}
+
+#rectPlayer .control .volume svg {
+  width: 48px;
+  height: 48px;
+}
+
+#rectPlayer .control .volume .mute {
+  display: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#rectPlayer .control .volume .num {
+  display: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#rectPlayer .control .volume:hover .num {
+  display: block;
+}
+
+#rectPlayer .control .volume.mute .normal {
+  display: none;
+}
+
+#rectPlayer .control .volume.mute .mute {
+  display: block;
+}
+
+#rectPlayer .control .playmode {
+  right: 56px;
+  bottom: 30px;
+}
+
+#rectPlayer .control .playmode svg {
+  width: 36px;
+  height: 36px;
+}
+
+#rectPlayer .control .playmode path {
+  display: none;
+}
+
+#rectPlayer .control .playmode.normal path:nth-child(1) {
+  display: block;
+}
+
+#rectPlayer .control .playmode.repeat path:nth-child(2) {
+  display: block;
+}
+
+#rectPlayer .control .playmode.repeatone path:nth-child(3) {
+  display: block;
+}
+
+#rectPlayer .control .playmode.random path:nth-child(4) {
+  display: block;
+}
+
+#rectPlayer .control .fore {
+  right: 104px;
+  bottom: 30px;
+}
+
+#rectPlayer .control .fore svg {
+  width: 36px;
+  height: 36px;
+}
+
+#rectPlayer .control .prve {
+  right: 152px;
+  bottom: 30px;
+}
+
+#rectPlayer .control .prve svg {
+  width: 36px;
+  height: 36px;
+}
+
+#rectPlayer .control .openlist {
+  right: 2px;
+  top: 2px;
+}
+
+#rectPlayer .control .openlist svg {
+  width: 12px;
+  height: 12px;
+}
+
+#rectPlayer .listclip {
+  z-index: 80;
+  position: absolute;
+  display: block;
+  height: 84px;
+  left: 83px;
+  bottom: 0;
+  overflow: hidden;
+}
+
+#rectPlayer .list {
+  z-index: 81;
+  position: absolute;
+  width: 361px;
+  height: 182px;
+  border: 1px solid black;
+  border-bottom: none;
+  bottom: 0;
+  transform: translateY(98px);
+  -ms-transform: translateY(98px);
+  -moz-transform: translateY(98px);
+  -webkit-transform: translateY(98px);
+  -o-transform: translateY(98px);
+}
+
+#rectPlayer .list .lcontrol {
+  z-index: 82;
+  position: relative;
+  flex-basis: 32px;
+  border-right: 1px solid #ccc;
+}
+
+#rectPlayer .list .lcontrol .listadd {
+  position: relative;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .lcontrol .listremove {
+  position: relative;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .lcontrol .about {
+  position: relative;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .detail {
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: block;
+  flex-grow: 1;
+  border: none;
+}
+
+#rectPlayer .list .detail li {
+  cursor: pointer;
+  position: relative;
+  height: 30px;
+  width: 100%;
+}
+
+#rectPlayer .list .detail li p {
+  display: block;
+  margin: 0 4px;
+  font-size: 8pt;
+  pointer-events: none;
+}
+
+#rectPlayer .list .detail li p:nth-child(1) {
+  flex-basis: 2px;
+  flex-shrink: 0;
+  margin: 4px 0;
+  background-color: #00000040;
+}
+
+#rectPlayer .list .detail li p:nth-child(2) {
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  flex-shrink: 0;
+  text-align: center;
+  padding-top: 6px;
+  flex-basis: 32px;
+}
+
+#rectPlayer .list .detail li p:nth-child(3) {
+  -moz-user-select: none;
+  -o-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  padding-top: 6px;
+  flex-grow: 1;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#rectPlayer .list .detail li p:nth-child(4) {
+  flex-basis: 2px;
+  flex-shrink: 0;
+  margin: 4px 0;
+  background-color: #00000040;
+}
+
+#rectPlayer .list .detail li p:nth-child(5) {
+  display: block;
+  position: absolute;
+  width: calc(100% - 2 * 12px);
+  margin-left: 12px;
+  margin-right: 12px;
+  bottom: 0;
+  border-bottom: 1px solid #00000040;
+}
+
+#rectPlayer .list .detail li.unavailable {
+  cursor: default;
+}
+
+#rectPlayer .list .detail li.unavailable p:nth-child(3) {
+  text-decoration: line-through;
+}
+
+#rectPlayer .list .detail li.selected {
+  background-color: #00000020;
+}
+
+#rectPlayer .list .detail li.selected p:nth-child(1) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.selected p:nth-child(4) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.playing p:nth-child(1) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.playing p:nth-child(4) {
+  flex-basis: 4px;
+}
+
+#rectPlayer .list .detail li.playing p:nth-child(2)::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 0;
+  left: 15px;
+  top: 6px;
+  border-radius: 9px 9px;
+  background-color: #00000040;
+}
+
+#rectPlayer .list .detail::-webkit-scrollbar {
+  width: 12px;
+}
+
+#rectPlayer .list .detail::-webkit-scrollbar-track {
+  border-left: 1px solid #ccc inset;
+}
+
+#rectPlayer .list .detail::-webkit-scrollbar-thumb {
+  background: #eaeaea;
+}
+
+#rectPlayer.play .cover:hover .ccontrol .btn:nth-child(2) {
+  display: block;
+}
+
+#rectPlayer.pause .cover:hover .ccontrol .btn:nth-child(1) {
+  display: block;
+}
+
+#rectPlayer.list-on .listclip {
+  animation: list_clip_on 0s steps(1) forwards;
+  -webkit-animation: list_clip_on 0s steps(1) forwards;
+}
+
+#rectPlayer.list-on .list {
+  animation: toggle_list_on .24s ease-in forwards;
+  -webkit-animation: toggle_list_on .24s ease-in forwards;
+}
+
+#rectPlayer.list-off .listclip {
+  animation: list_clip_off .24s steps(1) forwards;
+  -webkit-animation: list_clip_off .24s steps(1) forwards;
+}
+
+#rectPlayer.list-off .list {
+  animation: toggle_list_off .24s ease-in forwards;
+  -webkit-animation: toggle_list_off .24s ease-in forwards;
+}
+
+#rectPlayer.panel-on .cpanelclip {
+  animation: clip_on 0s steps(1) forwards;
+  -webkit-animation: clip_on 0s steps(1) forwards;
+}
+
+#rectPlayer.panel-on .cpanel {
+  animation: toggle_panel_on .24s ease-in forwards;
+  -webkit-animation: toggle_panel_on .24s ease-in forwards;
+}
+
+#rectPlayer.panel-off .handle {
+  border-left: none;
+}
+
+#rectPlayer.panel-off .cpanelclip {
+  animation: clip_off .24s steps(1) forwards;
+  -webkit-animation: clip_off .24s steps(1) forwards;
+}
+
+#rectPlayer.panel-off .cpanel {
+  animation: toggle_panel_off .24s ease-out forwards;
+  -webkit-animation: toggle_panel_off .24s ease-out forwards;
+}
+
+@media only screen and (min-width: 768px) {
+  .flex-row-adapt {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  .flex-row-adapt {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+  }
+}

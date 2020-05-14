@@ -1,0 +1,2 @@
+D:\Program\Test\RectPlayer\obj\Debug\RectPlayer.njsproj.CoreCompileInputs.cache
+D:\Program\Test\RectPlayer\bin\Microsoft.NodejsTools.WebRole.dll
