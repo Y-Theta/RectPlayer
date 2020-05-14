@@ -41,10 +41,13 @@ class Avatar {
  *
  * */
 class RectPlayerOption {
-    public EnableLog: boolean;
-    public PlayMode: PlayMode;
-    public Async: boolean;
+    public EnableLog? : boolean;
+    public PlayMode? : PlayMode;
+    public Async? : boolean;
     public PlaylistId: number | string;
+    public Dependence? :string[] ;
+    public Template? : string;
+    public Style? : string;
 }
 
 /**

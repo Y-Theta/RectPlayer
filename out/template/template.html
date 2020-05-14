@@ -16,7 +16,7 @@
             <div id="cover-resolve"></div>
             <div id="cover-static"></div>
             <div id="ctl-play" class="ccontrol">
-                <svg  xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="-4 -6 48 48">
+                <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="-4 -6 48 48">
                     <path class="btn" d="M29,18,11,28.39V7.61Z" />
                     <path class="btn" d="M24,9V9M12,9V9M25,8H23V28h2V8ZM13,8H11V28h2V8Z" />
                 </svg>
@@ -28,11 +28,10 @@
                     <div id="name" class="name">Title</div>
                     <div id="author" class="author">author</div>
                     <div class="track">
-                        <div class="full">
-                            <div id="track-loding" class="loding">
-                                <div id="track-pos" class="pos">
-                                    <div id="track-thumb" class="thumb"></div>
-                                </div>
+                        <div id="track-full" class="full">
+                            <div id="track-loding" class="loding"></div>
+                            <div id="track-pos" class="pos">
+                                <div class="thumb"></div>
                             </div>
                         </div>
                         <div class="time">
@@ -41,12 +40,18 @@
                     </div>
                     <div id="volume" class="volume" title="音量">
                         <svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewbox="0 0 64 64">
-                            <path class="normal" d="M37.7,25.66a9,9,0,0,1,1.94,2.91,9,9,0,0,1,0,6.86,9,9,0,0,1-1.94,2.91l-.91-.91a7.68,7.68,0,0,0,1.67-2.49,7.74,7.74,0,0,0,0-5.88,7.68,7.68,0,0,0-1.67-2.49l.91-.91ZM35,28.38l-.9.9a3.7,3.7,0,0,1,.83,1.24A3.94,3.94,0,0,1,35.2,32a3.89,3.89,0,0,1-.29,1.47,3.74,3.74,0,0,1-.83,1.25l.9.9A5.12,5.12,0,0,0,36.1,34a5.24,5.24,0,0,0,0-3.92A5.12,5.12,0,0,0,35,28.38Zm-4.53-4.06-3.84,3.84H23.68v7.68h2.93l3.85,3.84h.9V24.32Z" />
-                            <path class="mute" d="M25.33,35.84H23.68V28.16h2.93l3.84-3.84h.91v5.49ZM28.8,38l1.66,1.65h.9V35.47ZM39.18,27.64l-.94.95c.07.16.15.31.22.47a7.74,7.74,0,0,1,0,5.88,7.68,7.68,0,0,1-1.67,2.49l.91.91a9,9,0,0,0,1.94-2.91,9,9,0,0,0,0-6.86A8,8,0,0,0,39.18,27.64Zm-4,4c0,.11,0,.22,0,.34a3.89,3.89,0,0,1-.29,1.47,3.74,3.74,0,0,1-.83,1.25l.9.9A5.12,5.12,0,0,0,36.1,34a5,5,0,0,0,.16-3.39ZM21.74,42.26,42.17,21.83m.71.71-1.42-1.42L21,41.55,22.45,43Z" />
-                            <path id="ctl-mute" d="M 32,12 A 20 20 0 1 1 31.9 12" class="num" style="stroke: none; fill: #00000001;" />
-                            <path d="M 32,8 A 24 24 0 1 1 31.9 8" class="num" style="stroke-width: 6px; stroke: #00000020; fill: none;" />
-                            <path id="volume-path" class="num" style="stroke-width: 6px; stroke: #faac20; fill: none;" />
-                            <path id="volume-track" class="num" d="M 32,8 A 24 24 0 1 1 31.9 8" style="stroke-width: 6px; stroke: #ffffff01; fill: none;" />
+                            <path class="normal"
+                                d="M37.7,25.66a9,9,0,0,1,1.94,2.91,9,9,0,0,1,0,6.86,9,9,0,0,1-1.94,2.91l-.91-.91a7.68,7.68,0,0,0,1.67-2.49,7.74,7.74,0,0,0,0-5.88,7.68,7.68,0,0,0-1.67-2.49l.91-.91ZM35,28.38l-.9.9a3.7,3.7,0,0,1,.83,1.24A3.94,3.94,0,0,1,35.2,32a3.89,3.89,0,0,1-.29,1.47,3.74,3.74,0,0,1-.83,1.25l.9.9A5.12,5.12,0,0,0,36.1,34a5.24,5.24,0,0,0,0-3.92A5.12,5.12,0,0,0,35,28.38Zm-4.53-4.06-3.84,3.84H23.68v7.68h2.93l3.85,3.84h.9V24.32Z" />
+                            <path class="mute"
+                                d="M25.33,35.84H23.68V28.16h2.93l3.84-3.84h.91v5.49ZM28.8,38l1.66,1.65h.9V35.47ZM39.18,27.64l-.94.95c.07.16.15.31.22.47a7.74,7.74,0,0,1,0,5.88,7.68,7.68,0,0,1-1.67,2.49l.91.91a9,9,0,0,0,1.94-2.91,9,9,0,0,0,0-6.86A8,8,0,0,0,39.18,27.64Zm-4,4c0,.11,0,.22,0,.34a3.89,3.89,0,0,1-.29,1.47,3.74,3.74,0,0,1-.83,1.25l.9.9A5.12,5.12,0,0,0,36.1,34a5,5,0,0,0,.16-3.39ZM21.74,42.26,42.17,21.83m.71.71-1.42-1.42L21,41.55,22.45,43Z" />
+                            <path id="ctl-mute" d="M 32,12 A 20 20 0 1 1 31.9 12" class="num"
+                                style="stroke: none; fill: #00000001;" />
+                            <path d="M 32,8 A 24 24 0 1 1 31.9 8" class="num"
+                                style="stroke-width: 6px; stroke: #00000020; fill: none;" />
+                            <path id="volume-path" class="num"
+                                style="stroke-width: 6px; stroke: #faac20; fill: none;" />
+                            <path id="volume-track" class="num" d="M 32,8 A 24 24 0 1 1 31.9 8"
+                                style="stroke-width: 6px; stroke: #ffffff01; fill: none;" />
                         </svg>
                     </div>
                     <div id="mode" class="playmode random" title="播放器模式">
@@ -105,6 +110,7 @@
                         </svg>
                     </div>
                 </div>
+                <div class=""> </div>
                 <ul id="list-detail" class="detail">
                     <li class="playing">
                         <p> </p>
@@ -120,7 +126,7 @@
                         <p> </p>
                         <p> </p>
                     </li>
-                    <li >
+                    <li>
                         <p> </p>
                         <p> </p>
                         <p> </p>

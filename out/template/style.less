@@ -14,9 +14,10 @@
 @yoffset: @listheight - @coverheight;
 
 @trackpanelthickness: 12px;
-@trackthickness: 8px;
+@trackthickness: 2px;
 @trackpadding: 8px;
 @trackbottom: 4px;
+@trackthumb: 8px;
 
 @timewidth: 72px;
 
@@ -368,30 +369,49 @@
 
             .full {
                 flex: 1;
-                top: @trackpanelthickness - @trackthickness;
+                top: (@trackpanelthickness - @trackthickness)/2;
                 height: @trackthickness;
                 background-color: @track;
             }
 
             .loding {
-                width: 120px;
+                position: absolute;
+                width: 80%;
                 background-color: @track-load;
             }
 
             .pos {
-                width: 80px;
+                position: absolute;
+                width: 0;
+                margin: 0  @trackthumb;
+                // padding: 0  @trackthumb;
                 background-color: @track-now;
+
+                &::before{
+                    content: " ";
+                    position: absolute;
+                    height: 100%;
+                    width: @trackthumb;
+                    margin-left: -@trackthumb;
+                    background-color: @track-now;
+                }
             }
 
             .thumb {
+                // display: none;
                 position: absolute;
                 right: 0;
-                width: @trackthickness;
+                top: -(@trackthumb - @trackthickness)/2;
+                width: @trackthumb;
+                height: @trackthumb;
+                border-radius: @trackthumb / 2 @trackthumb / 2;
                 background-color: @track-thumb;
+                border: 1px solid white;
             }
 
             &:hover {
                 .thumb {
+                    border: 1px solid @track-thumb-hover;
                     background-color: @track-thumb-hover;
                 }
             }
@@ -400,8 +420,9 @@
         .time:extend(.rpele .text):extend(.no-interact) {
             position: relative;
             height: 100%;
+            line-height: 100%;
             margin: 0 0 0 @trackpadding;
-            text-align: end;
+            vertical-align: top;
             width: 72px;
             overflow: hidden;
 

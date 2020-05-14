@@ -159,7 +159,7 @@ class DefaultTemplateResolver implements IResolverContract {
      *
      */
     public UpdateUI(track: Track, stack: number[]) {
-        this._control.cover_avatar.style.backgroundImage = "url(" + track.al.url + ")";
+        this._control.cover_avatar.style.backgroundImage = "url(" + track.al.url+"?param=256y256" + ")";
         this._control.source.setAttribute("src", track.src);
         this._control.name.innerHTML = track.name;
         this._control.author.innerHTML = track.ar[0].name;

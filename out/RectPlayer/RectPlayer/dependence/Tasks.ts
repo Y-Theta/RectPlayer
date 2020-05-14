@@ -232,6 +232,9 @@ class AjaxTask extends BaseAsyncTask {
             script.onload = (e) => {
                 this.success(jslist[1]);
             };
+            script.onerror = (e)=>{
+                this.failed(jslist[1]);
+            }
             script.src = option.url;
             try {
                 document.body.appendChild(script);

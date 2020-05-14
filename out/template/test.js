@@ -50,8 +50,7 @@ function expandorhide() {
         : classl.contains("panel-off")
         ? (classl.remove("panel-off"), classl.add("panel-on"))
         : classl.add("panel-on");
-    Init(cc);
-    play(cc);
+    
 }
 
 function openlist(e) {
@@ -274,6 +273,15 @@ Visualizer.prototype = {
         that.playing = false;
     },
 };
+
+(function(){
+    switch("2"){
+
+        case "0"||"1"||"2":console.log("Ca");
+        case "2":console.log("Ca");
+        case "10":console.log("Cass");
+    }
+})();
 
 // setInterval(function () {
 //     if(v.ready){

@@ -411,9 +411,11 @@ exports.NeteaseCore = NeteaseCore;
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
+var PlayerModel_1 = __webpack_require__(/*! ./Model/PlayerModel */ "./RectPlayer/Model/PlayerModel.ts");
 var Tasks_1 = __webpack_require__(/*! ./dependence/Tasks */ "./RectPlayer/dependence/Tasks.ts");
 var RectplayerTemplateResolver_1 = __webpack_require__(/*! ./RectplayerTemplateResolver */ "./RectPlayer/RectplayerTemplateResolver.ts");
 var NeteaseCore_1 = __webpack_require__(/*! ./NeteaseCore */ "./RectPlayer/NeteaseCore.ts");
+var SongSelecter_1 = __webpack_require__(/*! ./SongSelecter */ "./RectPlayer/SongSelecter.ts");
 var RectPlayer = /** @class */ (function () {
     /**
      * 更改播放器的播放模式
@@ -459,19 +461,24 @@ var RectPlayer = /** @class */ (function () {
         //#region IOC
         this._resolver = null;
         this._core = null;
+        this._selecter = null;
         //#endregion
         //#region Properties
         this._listflag = false;
         this._panelflag = false;
         this._mute = false;
         this._playing = null;
-        this._enableresolve = true;
+        this._priv = false;
+        this._enableresolve = false;
         this._volume = 0;
         this._volumebak = 0;
         this._volumeref = 6000;
+        this._analyserfreq = 200;
         this._srcid = null;
         this._playstack = null;
         this._playlist = null;
+        this._playmode = PlayerModel_1.PlayMode.normal;
+        this._playmodeloop = [PlayerModel_1.PlayMode.normal, PlayerModel_1.PlayMode.repeat, PlayerModel_1.PlayMode.repeatone, PlayerModel_1.PlayMode.random];
         this._playerdom = null;
         this._playcontrol = null;
         /** AudioResolve */
@@ -481,9 +488,16 @@ var RectPlayer = /** @class */ (function () {
         this._analyser = null;
         this._analyzeInterval = null;
         this._resolvedarrbuffer = null;
+        this._dependencecollection = null;
+        this._templatesrc = null;
+        this._stylesrc = null;
         Utils_1.Utils._enablelog = true;
         this._resolver = new RectplayerTemplateResolver_1.DefaultTemplateResolver();
         this._core = new NeteaseCore_1.NeteaseCore();
+        this._selecter = new SongSelecter_1.SongSelecter();
+        this._dependencecollection = option.Dependence || [Utils_1.Utils.Path("resource") + "/javascript/lib/less.min.js"];
+        this._templatesrc = option.Template || Utils_1.Utils.Path() + "/template/Template.xml";
+        this._stylesrc = option.Style || Utils_1.Utils.Path() + "/template/style.less";
         this._srcid = option.PlaylistId;
         this._playstack = [];
         Utils_1.Utils.Log("\\ RectPlayer  1.0.0 \n\\ @Y_Theta \n\\ http:\\\\blog.y-theta.com \n\\ Starting ....");
@@ -503,24 +517,25 @@ var RectPlayer = /** @class */ (function () {
     RectPlayer.prototype.Init = function () {
         //加载依赖文件
         var loadtasks = [];
-        [Utils_1.Utils.Path() + "/less.min.js", Utils_1.Utils.Path("resource") + "/javascript/lib/anime.min.js"].forEach(function (element) {
-            loadtasks.push(Tasks_1.Tasks.Ajax({
-                url: element,
-                prepare: function () { return Utils_1.Utils.Log("loading ... " + element); },
-                success: function (arg) { return Utils_1.Utils.Log(arg.stepresult + " loaded"); },
-                failed: function (arg) { return Utils_1.Utils.Log(arg.stepresult + " failed"); },
-            }));
-        });
+        this._dependencecollection &&
+            this._dependencecollection.forEach(function (element) {
+                loadtasks.push(Tasks_1.Tasks.Ajax({
+                    url: element,
+                    prepare: function () { return Utils_1.Utils.Log("loading ... " + element); },
+                    success: function (arg) { return Utils_1.Utils.Log(arg.stepresult + " loaded"); },
+                    failed: function (arg) { return Utils_1.Utils.Log(arg.stepresult + " failed"); },
+                }));
+            });
         Tasks_1.Tasks.WaitAll(loadtasks, this.loadtemplate.bind(this));
     };
     /** 加载模板 */
     RectPlayer.prototype.loadtemplate = function () {
         var lesstask = Tasks_1.Tasks.Ajax({
-            url: Utils_1.Utils.Path() + "/template/style.less",
+            url: this._stylesrc,
             prepare: function () { return Utils_1.Utils.Log("GetTemplate Less :" + Utils_1.Utils.Path() + "/template/style.less"); },
         });
         var xmltask = Tasks_1.Tasks.Ajax({
-            url: Utils_1.Utils.Path() + "/template/Template.xml",
+            url: this._templatesrc,
             prepare: function () { return Utils_1.Utils.Log("GetTemplate Html :" + Utils_1.Utils.Path() + "/template/Template.xml"); },
         });
         Tasks_1.Tasks.WaitAll([lesstask, xmltask], this.rendertemplate.bind(this), null, Tasks_1.TaskOrder.Sequence);
@@ -541,13 +556,13 @@ var RectPlayer = /** @class */ (function () {
             this._resolver.ResloveTemplate(res[1], function (ctl, dom) {
                 _this._playcontrol = ctl;
                 _this._playerdom = dom;
+                _this.bindingctl();
                 document.body.appendChild(_this._playerdom);
                 /** 获取播放列表信息 */
                 _this._core.Init(_this._srcid, function (pl) {
                     _this._playlist = pl;
                     Utils_1.Utils.Log(pl);
                     _this._resolver.RenderTemplate(_this._playlist, function () {
-                        _this.bindingctl();
                         /** 获取歌曲url */
                         _this._core.Update(_this.onlistupdate.bind(_this));
                     });
@@ -573,13 +588,24 @@ var RectPlayer = /** @class */ (function () {
         ctl.ctl_listtoogle.onclick = this.listmousetoggle.bind(this);
         ctl.ctl_paneltoogle.onclick = this.panelmousetoggle.bind(this);
         ctl.ctl_play.onclick = this.playmousetoggle.bind(this);
+        ctl.ctl_fore.onclick = this.next.bind(this);
+        ctl.ctl_prve.onclick = this.prve.bind(this);
+        ctl.ctl_mode.onclick = this.switchplaymode.bind(this);
+        this.switchmode(this._playmode);
         ctl.source.onplay = this.resolvesrctrack.bind(this);
         ctl.source.onpause = this.onsourcepause.bind(this);
+        ctl.source.onended = this.onsourceended.bind(this);
+        ctl.source.onerror = this.onsourceerror.bind(this);
+        ctl.source.onemptied = this.onsourceerror.bind(this);
+        ctl.source.ontimeupdate = this.autoupdatetrack.bind(this);
+        ctl.source.onprogress = this.autoupdatetrack.bind(this);
+        ctl.source.ondurationchange = this.autoupdatetimeline.bind(this);
         this.pause();
         ctl.volume_track.onclick = this.volumetrackclick.bind(this);
         ctl.ctl_mute.onclick = this.volumeclick.bind(this);
         ctl.volume.onmousewheel = this.volumescroll.bind(this);
         ctl.volume.addEventListener("DOMMouseScroll", this.volumescroll.bind(this), { passive: true });
+        ctl.track_full.onclick = this.ontrackclick.bind(this);
     };
     //#region 播放列表/控制面板
     RectPlayer.prototype.listmousetoggle = function (e) {
@@ -700,26 +726,77 @@ var RectPlayer = /** @class */ (function () {
     };
     RectPlayer.prototype.play = function (id) {
         if (id < 0 ||
-            !!this._playlist ||
+            !this._playlist ||
             id >= this._playlist.tracks.length ||
-            id == this._playstack[this._playstack.length - 1])
+            id === this._playstack[this._playstack.length - 1])
             return;
         this.preparesong(id);
+        this.pause();
         this.resume();
     };
     RectPlayer.prototype.prve = function () {
         if (this._playstack.length <= 0)
             return;
         //TODO:: select prve
+        this._priv = true;
+        var prve = this._selecter.Priv(this._playmode, this._playlist.tracks, this._playstack[this._playstack.length - 1], this._playstack);
+        if (typeof prve == "number")
+            this.play(prve);
     };
     RectPlayer.prototype.next = function () {
         if (this._playstack.length <= 0)
             return;
         //TODO:: select next
+        var next = this._selecter.Next(this._playmode, this._playlist.tracks, this._playstack[this._playstack.length - 1], this._playstack);
+        if (typeof next == "number")
+            this.play(next);
     };
     RectPlayer.prototype.preparesong = function (id) {
-        this._playstack.push(id);
+        if (this._priv) {
+            this._playstack.push(id);
+            this._priv = false;
+        }
         this._resolver.UpdateUI(this._playlist.tracks[id], this._playstack);
+    };
+    RectPlayer.prototype.onsourceended = function () {
+        this.pause();
+        this.next();
+    };
+    /** 进度条控制 */
+    RectPlayer.prototype.ontrackclick = function (e) {
+        var clip = this._playcontrol.track_full.getBoundingClientRect();
+        var x1 = e.clientX - clip.x;
+        var audio = this._playcontrol.source;
+        audio && (audio.currentTime = (x1 / clip.width) * audio.duration);
+    };
+    /** 自动更新歌曲播放进度 */
+    RectPlayer.prototype.autoupdatetrack = function () {
+        var audio = this._playcontrol.source;
+        if (audio.src) {
+            var bw = audio.buffered.length ? audio.buffered.end(audio.buffered.length - 1) / audio.duration : 0;
+            this._playcontrol.track_loding.style.width = Utils_1.Utils.PercentFormat(bw);
+            var aw = audio.currentTime / audio.duration;
+            this._playcontrol.track_now.style.width = "" + (this._playcontrol.track_full.clientWidth - 8) * aw + "px";
+            this._playcontrol.time_now.innerHTML = Utils_1.Utils.TimeFormat(audio.currentTime);
+        }
+    };
+    /** 自动更新歌曲时长 */
+    RectPlayer.prototype.autoupdatetimeline = function () {
+        this._playcontrol.time_des.innerHTML = Utils_1.Utils.TimeFormat(this._playcontrol.source.duration);
+        this._playcontrol.track_loding.style.width = "0";
+        this._playcontrol.track_now.style.width = "0";
+    };
+    //#endregion
+    //#region 设置播放模式
+    RectPlayer.prototype.switchplaymode = function () {
+        var nowindex = this._playmodeloop.indexOf(this._playmode);
+        nowindex = (nowindex + 1) % this._playmodeloop.length;
+        this.switchmode(this._playmodeloop[nowindex]);
+    };
+    RectPlayer.prototype.switchmode = function (mode) {
+        Utils_1.Utils.Log([this._playmode, mode]);
+        this.switchElementStatus(this._playcontrol.ctl_mode, mode, this._playmode);
+        this._playmode = mode;
     };
     //#endregion
     //#region 音频可视化
@@ -735,9 +812,20 @@ var RectPlayer = /** @class */ (function () {
             this._gain.connect(this._analyser);
             this._analyser.connect(this._audiocontext.destination);
             this._resolvedarrbuffer = new Uint8Array(this._analyser.frequencyBinCount);
+            this.setVolume(this._gain.gain.value * 6000);
         }
         if (this._enableresolve) {
-            this._analyzeInterval = setInterval(this.renderresolve.bind(this), 100);
+            this._analyzeInterval = setInterval(this.renderresolve.bind(this), this._analyserfreq);
+        }
+    };
+    RectPlayer.prototype.onsourceerror = function (e) {
+        Utils_1.Utils.Log("Src err : " + e);
+        this._playcontrol.time_des.innerHTML = "00:00";
+        this._playcontrol.track_loding.style.width = "0";
+        this._playcontrol.track_now.style.width = "0";
+        if (this._analyzeInterval) {
+            clearInterval(this._analyzeInterval);
+            this._analyzeInterval = null;
         }
     };
     RectPlayer.prototype.onsourcepause = function () {
@@ -747,6 +835,7 @@ var RectPlayer = /** @class */ (function () {
         }
     };
     RectPlayer.prototype.renderresolve = function () {
+        //TODO:: paint resolve graph
         this._analyser.getByteFrequencyData(this._resolvedarrbuffer);
         Utils_1.Utils.Log(this._resolvedarrbuffer);
     };
@@ -918,7 +1007,7 @@ var DefaultTemplateResolver = /** @class */ (function () {
      *
      */
     DefaultTemplateResolver.prototype.UpdateUI = function (track, stack) {
-        this._control.cover_avatar.style.backgroundImage = "url(" + track.al.url + ")";
+        this._control.cover_avatar.style.backgroundImage = "url(" + track.al.url + "?param=256y256" + ")";
         this._control.source.setAttribute("src", track.src);
         this._control.name.innerHTML = track.name;
         this._control.author.innerHTML = track.ar[0].name;
@@ -930,6 +1019,82 @@ var DefaultTemplateResolver = /** @class */ (function () {
     return DefaultTemplateResolver;
 }());
 exports.DefaultTemplateResolver = DefaultTemplateResolver;
+
+
+/***/ }),
+
+/***/ "./RectPlayer/SongSelecter.ts":
+/*!************************************!*\
+  !*** ./RectPlayer/SongSelecter.ts ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var PlayerModel_1 = __webpack_require__(/*! ./Model/PlayerModel */ "./RectPlayer/Model/PlayerModel.ts");
+/**  */
+var SongSelecter = /** @class */ (function () {
+    function SongSelecter() {
+    }
+    /** 选择前一首歌曲 */
+    SongSelecter.prototype.Priv = function (mode, tracks, now, history) {
+        if (!tracks) {
+            return null;
+        }
+        var privid = typeof now == "number" ? now : tracks.indexOf(now);
+        switch (mode) {
+            case PlayerModel_1.PlayMode.normal:
+            case PlayerModel_1.PlayMode.repeat:
+            case PlayerModel_1.PlayMode.repeatone:
+                if (history)
+                    privid = history[history.length - 2];
+                else
+                    privid = (privid - 1 + tracks.length) % tracks.length;
+                break;
+            case PlayerModel_1.PlayMode.random:
+                if (history)
+                    privid = history[history.length - 2];
+                else
+                    privid = Math.floor(Math.random() * tracks.length);
+                break;
+            default:
+                break;
+        }
+        return privid;
+    };
+    /** 选择后一首歌曲 */
+    SongSelecter.prototype.Next = function (mode, tracks, now, history) {
+        if (!tracks) {
+            return null;
+        }
+        var privid = typeof now == "number" ? now : tracks.indexOf(now);
+        switch (mode) {
+            case PlayerModel_1.PlayMode.normal:
+            case PlayerModel_1.PlayMode.repeat:
+            case PlayerModel_1.PlayMode.repeatone:
+                privid = (privid + 1) % tracks.length;
+                break;
+            case PlayerModel_1.PlayMode.random:
+                privid = Math.floor(Math.random() * tracks.length);
+                break;
+            // case PlayMode.repeat:
+            //     if (history) privid = history[history.length - 2];
+            //     else privid = (privid - 1 + tracks.length) % tracks.length;
+            //     break;
+            // case PlayMode.repeatone:
+            //     if (history) privid = history[history.length - 2];
+            //     else privid = (privid - 1 + tracks.length) % tracks.length;
+            //     break;
+            default:
+                break;
+        }
+        return privid;
+    };
+    return SongSelecter;
+}());
+exports.SongSelecter = SongSelecter;
 
 
 /***/ }),
@@ -1239,6 +1404,9 @@ var AjaxTask = /** @class */ (function (_super) {
             script_1.type = "text/javascript";
             script_1.onload = function (e) {
                 _this.success(jslist[1]);
+            };
+            script_1.onerror = function (e) {
+                _this.failed(jslist[1]);
             };
             script_1.src = option.url;
             try {

@@ -15,11 +15,14 @@ import { ISourceContract } from "./Interfaces/ISourceContract";
 import { Tasks, IAsyncTask, TaskArgs, TaskOrder } from "./dependence/Tasks";
 import { DefaultTemplateResolver } from "./RectplayerTemplateResolver";
 import { NeteaseCore } from "./NeteaseCore";
+import { ISongSelectContract } from "./Interfaces/ISongSelectContract";
+import { SongSelecter } from "./SongSelecter";
 
 export class RectPlayer implements IControlContract {
     //#region IOC
     private _resolver: IResolverContract = null;
     private _core: ISourceContract = null;
+    private _selecter: ISongSelectContract = null;
     //#endregion
 
     //#region Properties
@@ -27,16 +30,21 @@ export class RectPlayer implements IControlContract {
     private _panelflag: boolean = false;
     private _mute: boolean = false;
     private _playing: boolean = null;
+    private _priv: boolean = false;
     private _enableresolve: boolean = false;
 
     private _volume: number = 0;
     private _volumebak: number = 0;
     private _volumeref: number = 6000;
 
+    private _analyserfreq: number = 200;
+
     private _srcid: number | string = null;
     private _playstack: number[] = null;
 
     private _playlist: PlayList = null;
+    private _playmode: PlayMode = PlayMode.normal;
+    private _playmodeloop: PlayMode[] = [PlayMode.normal, PlayMode.repeat, PlayMode.repeatone, PlayMode.random];
     private _playerdom: HTMLElement = null;
     private _playcontrol: RectPlayerControl = null;
 
@@ -48,6 +56,9 @@ export class RectPlayer implements IControlContract {
     private _analyzeInterval: NodeJS.Timer = null;
     private _resolvedarrbuffer: Uint8Array = null;
 
+    private _dependencecollection: string[] = null;
+    private _templatesrc: string = null;
+    private _stylesrc: string = null;
     //#endregion
 
     //#region IControlContract
@@ -66,27 +77,28 @@ export class RectPlayer implements IControlContract {
     public Init() {
         //加载依赖文件
         let loadtasks: IAsyncTask[] = [];
-        [Utils.Path() + "/less.min.js", Utils.Path("resource") + "/javascript/lib/anime.min.js"].forEach((element) => {
-            loadtasks.push(
-                Tasks.Ajax({
-                    url: element,
-                    prepare: () => Utils.Log("loading ... " + element),
-                    success: (arg: TaskArgs) => Utils.Log(arg.stepresult + " loaded"),
-                    failed: (arg: TaskArgs) => Utils.Log(arg.stepresult + " failed"),
-                })
-            );
-        });
+        this._dependencecollection &&
+            this._dependencecollection.forEach((element) => {
+                loadtasks.push(
+                    Tasks.Ajax({
+                        url: element,
+                        prepare: () => Utils.Log("loading ... " + element),
+                        success: (arg: TaskArgs) => Utils.Log(arg.stepresult + " loaded"),
+                        failed: (arg: TaskArgs) => Utils.Log(arg.stepresult + " failed"),
+                    })
+                );
+            });
         Tasks.WaitAll(loadtasks, this.loadtemplate.bind(this));
     }
 
     /** 加载模板 */
     private loadtemplate() {
         let lesstask = Tasks.Ajax({
-            url: Utils.Path() + "/template/style.less",
+            url: this._stylesrc,
             prepare: () => Utils.Log("GetTemplate Less :" + Utils.Path() + "/template/style.less"),
         });
         let xmltask = Tasks.Ajax({
-            url: Utils.Path() + "/template/Template.xml",
+            url: this._templatesrc,
             prepare: () => Utils.Log("GetTemplate Html :" + Utils.Path() + "/template/Template.xml"),
         });
         Tasks.WaitAll([lesstask, xmltask], this.rendertemplate.bind(this), null, TaskOrder.Sequence);
@@ -107,13 +119,13 @@ export class RectPlayer implements IControlContract {
             this._resolver.ResloveTemplate(res[1], (ctl: RectPlayerControl, dom: HTMLElement) => {
                 this._playcontrol = ctl;
                 this._playerdom = dom;
+                this.bindingctl();
                 document.body.appendChild(this._playerdom);
                 /** 获取播放列表信息 */
                 this._core.Init(this._srcid, (pl: PlayList) => {
                     this._playlist = pl;
                     Utils.Log(pl);
                     this._resolver.RenderTemplate(this._playlist, () => {
-                        this.bindingctl();
                         /** 获取歌曲url */
                         this._core.Update(this.onlistupdate.bind(this));
                     });
@@ -142,14 +154,27 @@ export class RectPlayer implements IControlContract {
         ctl.ctl_listtoogle.onclick = this.listmousetoggle.bind(this);
         ctl.ctl_paneltoogle.onclick = this.panelmousetoggle.bind(this);
         ctl.ctl_play.onclick = this.playmousetoggle.bind(this);
+        ctl.ctl_fore.onclick = this.next.bind(this);
+        ctl.ctl_prve.onclick = this.prve.bind(this);
+        ctl.ctl_mode.onclick = this.switchplaymode.bind(this);
+        this.switchmode(this._playmode);
+
         ctl.source.onplay = this.resolvesrctrack.bind(this);
         ctl.source.onpause = this.onsourcepause.bind(this);
+        ctl.source.onended = this.onsourceended.bind(this);
+        ctl.source.onerror = this.onsourceerror.bind(this);
+        ctl.source.onemptied = this.onsourceerror.bind(this);
+        ctl.source.ontimeupdate = this.autoupdatetrack.bind(this);
+        ctl.source.onprogress = this.autoupdatetrack.bind(this);
+        ctl.source.ondurationchange = this.autoupdatetimeline.bind(this);
         this.pause();
 
         ctl.volume_track.onclick = this.volumetrackclick.bind(this);
         ctl.ctl_mute.onclick = this.volumeclick.bind(this);
         ctl.volume.onmousewheel = this.volumescroll.bind(this);
         ctl.volume.addEventListener("DOMMouseScroll", this.volumescroll.bind(this), { passive: true });
+
+        ctl.track_full.onclick = this.ontrackclick.bind(this);
     }
 
     //#region 播放列表/控制面板
@@ -283,29 +308,95 @@ export class RectPlayer implements IControlContract {
     private play(id: number) {
         if (
             id < 0 ||
-            !!this._playlist ||
+            !this._playlist ||
             id >= this._playlist.tracks.length ||
-            id == this._playstack[this._playstack.length - 1]
+            id === this._playstack[this._playstack.length - 1]
         )
             return;
 
         this.preparesong(id);
+        this.pause();
         this.resume();
     }
 
     private prve() {
         if (this._playstack.length <= 0) return;
         //TODO:: select prve
+        this._priv = true;
+        let prve = this._selecter.Priv(
+            this._playmode,
+            this._playlist.tracks,
+            this._playstack[this._playstack.length - 1],
+            this._playstack
+        );
+        if (typeof prve == "number") this.play(prve);
     }
 
     private next() {
         if (this._playstack.length <= 0) return;
         //TODO:: select next
+        let next = this._selecter.Next(
+            this._playmode,
+            this._playlist.tracks,
+            this._playstack[this._playstack.length - 1],
+            this._playstack
+        );
+        if (typeof next == "number") this.play(next);
     }
 
     private preparesong(id: number) {
-        this._playstack.push(id);
+        if (this._priv) {
+            this._playstack.push(id);
+            this._priv = false;
+        }
         this._resolver.UpdateUI(this._playlist.tracks[id], this._playstack);
+    }
+
+    private onsourceended() {
+        this.pause();
+        this.next();
+    }
+
+    /** 进度条控制 */
+    private ontrackclick(e: MouseEvent) {
+        let clip = this._playcontrol.track_full.getBoundingClientRect();
+        let x1 = e.clientX - clip.x;
+        let audio = this._playcontrol.source;
+        audio && (audio.currentTime = (x1 / clip.width) * audio.duration);
+    }
+
+    /** 自动更新歌曲播放进度 */
+    private autoupdatetrack() {
+        let audio = this._playcontrol.source;
+        if (audio.src) {
+            let bw = audio.buffered.length ? audio.buffered.end(audio.buffered.length - 1) / audio.duration : 0;
+            this._playcontrol.track_loding.style.width = Utils.PercentFormat(bw);
+            var aw = audio.currentTime / audio.duration;
+            this._playcontrol.track_now.style.width = "" + (this._playcontrol.track_full.clientWidth - 8) * aw + "px";
+
+            this._playcontrol.time_now.innerHTML = Utils.TimeFormat(audio.currentTime);
+        }
+    }
+
+    /** 自动更新歌曲时长 */
+    private autoupdatetimeline() {
+        this._playcontrol.time_des.innerHTML = Utils.TimeFormat(this._playcontrol.source.duration);
+        this._playcontrol.track_loding.style.width = "0";
+        this._playcontrol.track_now.style.width = "0";
+    }
+    //#endregion
+
+    //#region 设置播放模式
+    private switchplaymode() {
+        let nowindex = this._playmodeloop.indexOf(this._playmode);
+        nowindex = (nowindex + 1) % this._playmodeloop.length;
+        this.switchmode(this._playmodeloop[nowindex]);
+    }
+
+    private switchmode(mode: PlayMode) {
+        Utils.Log([this._playmode, mode]);
+        this.switchElementStatus(this._playcontrol.ctl_mode, mode, this._playmode);
+        this._playmode = mode;
     }
     //#endregion
 
@@ -322,9 +413,21 @@ export class RectPlayer implements IControlContract {
             this._gain.connect(this._analyser);
             this._analyser.connect(this._audiocontext.destination);
             this._resolvedarrbuffer = new Uint8Array(this._analyser.frequencyBinCount);
+            this.setVolume(this._gain.gain.value * 6000);
         }
         if (this._enableresolve) {
-            this._analyzeInterval = setInterval(this.renderresolve.bind(this), 100);
+            this._analyzeInterval = setInterval(this.renderresolve.bind(this), this._analyserfreq);
+        }
+    }
+
+    private onsourceerror(e: any) {
+        Utils.Log("Src err : " + e);
+        this._playcontrol.time_des.innerHTML = "00:00";
+        this._playcontrol.track_loding.style.width = "0";
+        this._playcontrol.track_now.style.width = "0";
+        if (this._analyzeInterval) {
+            clearInterval(this._analyzeInterval);
+            this._analyzeInterval = null;
         }
     }
 
@@ -336,6 +439,7 @@ export class RectPlayer implements IControlContract {
     }
 
     private renderresolve() {
+        //TODO:: paint resolve graph
         this._analyser.getByteFrequencyData(this._resolvedarrbuffer);
         Utils.Log(this._resolvedarrbuffer);
     }
@@ -403,6 +507,10 @@ export class RectPlayer implements IControlContract {
         Utils._enablelog = true;
         this._resolver = new DefaultTemplateResolver();
         this._core = new NeteaseCore();
+        this._selecter = new SongSelecter();
+        this._dependencecollection = option.Dependence || [Utils.Path("resource") + "/javascript/lib/less.min.js"];
+        this._templatesrc = option.Template || Utils.Path() + "/template/Template.xml";
+        this._stylesrc = option.Style || Utils.Path() + "/template/style.less";
         this._srcid = option.PlaylistId;
         this._playstack = [];
         Utils.Log("\\ RectPlayer  1.0.0 \n\\ @Y_Theta \n\\ http:\\\\blog.y-theta.com \n\\ Starting ....");

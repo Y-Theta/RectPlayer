@@ -427,37 +427,55 @@
 
 #rectPlayer .control .track .full {
   flex: 1;
-  top: 4px;
-  height: 8px;
+  top: 5px;
+  height: 2px;
   background-color: #83ccba;
 }
 
 #rectPlayer .control .track .loding {
-  width: 120px;
+  position: absolute;
+  width: 80%;
   background-color: #a3a8a2;
 }
 
 #rectPlayer .control .track .pos {
-  width: 80px;
+  position: absolute;
+  width: 0;
+  margin: 0 8px;
+  background-color: #e5af95;
+}
+
+#rectPlayer .control .track .pos::before {
+  content: " ";
+  position: absolute;
+  height: 100%;
+  width: 8px;
+  margin-left: -8px;
   background-color: #e5af95;
 }
 
 #rectPlayer .control .track .thumb {
   position: absolute;
   right: 0;
+  top: -3px;
   width: 8px;
+  height: 8px;
+  border-radius: 4px 4px;
   background-color: #9d7eb9;
+  border: 1px solid white;
 }
 
 #rectPlayer .control .track:hover .thumb {
+  border: 1px solid #4a4a4a;
   background-color: #4a4a4a;
 }
 
 #rectPlayer .control .time {
   position: relative;
   height: 100%;
+  line-height: 100%;
   margin: 0 0 0 8px;
-  text-align: end;
+  vertical-align: top;
   width: 72px;
   overflow: hidden;
 }
