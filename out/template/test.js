@@ -40,6 +40,11 @@ document.ready(() => {
     var vt = document.getElementById("volume-track");
     vpanel = document.getElementById("volume");
     vt.addEventListener("click", this.tc);
+    if(window.Notification && Notification.permission !== "denied") {
+        Notification.requestPermission(function(status) {
+            var n = new Notification('通知标题', { body: '这里是通知内容！' }); 
+        });
+    }
 });
 
 function expandorhide() {

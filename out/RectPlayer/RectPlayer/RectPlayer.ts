@@ -323,7 +323,7 @@ export class RectPlayer implements IControlContract {
         if (this._playstack.length <= 0) return;
         //TODO:: select prve
         this._priv = true;
-        let prve = this._selecter.Priv(
+        let prve = this._selecter["Priv"](
             this._playmode,
             this._playlist.tracks,
             this._playstack[this._playstack.length - 1],
@@ -335,7 +335,7 @@ export class RectPlayer implements IControlContract {
     private next() {
         if (this._playstack.length <= 0) return;
         //TODO:: select next
-        let next = this._selecter.Next(
+        let next = this._selecter["Next"](
             this._playmode,
             this._playlist.tracks,
             this._playstack[this._playstack.length - 1],
@@ -345,10 +345,7 @@ export class RectPlayer implements IControlContract {
     }
 
     private preparesong(id: number) {
-        if (this._priv) {
-            this._playstack.push(id);
-            this._priv = false;
-        }
+        this._playstack.push(id);
         this._resolver.UpdateUI(this._playlist.tracks[id], this._playstack);
     }
 

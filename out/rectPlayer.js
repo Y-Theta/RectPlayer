@@ -7,105 +7,64 @@
 		var a = factory();
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(window, function() {
-return /******/ (function(modules) { // webpackBootstrap
-/******/ 	// The module cache
-/******/ 	var installedModules = {};
-/******/
-/******/ 	// The require function
-/******/ 	function __webpack_require__(moduleId) {
-/******/
-/******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId]) {
-/******/ 			return installedModules[moduleId].exports;
-/******/ 		}
-/******/ 		// Create a new module (and put it into the cache)
-/******/ 		var module = installedModules[moduleId] = {
-/******/ 			i: moduleId,
-/******/ 			l: false,
-/******/ 			exports: {}
-/******/ 		};
-/******/
-/******/ 		// Execute the module function
-/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-/******/
-/******/ 		// Flag the module as loaded
-/******/ 		module.l = true;
-/******/
-/******/ 		// Return the exports of the module
-/******/ 		return module.exports;
-/******/ 	}
-/******/
-/******/
-/******/ 	// expose the modules object (__webpack_modules__)
-/******/ 	__webpack_require__.m = modules;
-/******/
-/******/ 	// expose the module cache
-/******/ 	__webpack_require__.c = installedModules;
-/******/
-/******/ 	// define getter function for harmony exports
-/******/ 	__webpack_require__.d = function(exports, name, getter) {
-/******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
-/******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// create a fake namespace object
-/******/ 	// mode & 1: value is a module id, require it
-/******/ 	// mode & 2: merge all properties of value into the ns
-/******/ 	// mode & 4: return value when already ns object
-/******/ 	// mode & 8|1: behave like require
-/******/ 	__webpack_require__.t = function(value, mode) {
-/******/ 		if(mode & 1) value = __webpack_require__(value);
-/******/ 		if(mode & 8) return value;
-/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
-/******/ 		var ns = Object.create(null);
-/******/ 		__webpack_require__.r(ns);
-/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
-/******/ 		return ns;
-/******/ 	};
-/******/
-/******/ 	// getDefaultExport function for compatibility with non-harmony modules
-/******/ 	__webpack_require__.n = function(module) {
-/******/ 		var getter = module && module.__esModule ?
-/******/ 			function getDefault() { return module['default']; } :
-/******/ 			function getModuleExports() { return module; };
-/******/ 		__webpack_require__.d(getter, 'a', getter);
-/******/ 		return getter;
-/******/ 	};
-/******/
-/******/ 	// Object.prototype.hasOwnProperty.call
-/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-/******/
-/******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
-/******/
-/******/
-/******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./RectPlayer/RectPlayer.ts");
-/******/ })
-/************************************************************************/
-/******/ ({
+})(self, function() {
+return /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./RectPlayer/dependence/extends.js":
+/*!******************************************!*\
+  !*** ./RectPlayer/dependence/extends.js ***!
+  \******************************************/
+/*! namespace exports */
+/*! export __extends [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_require__.r, __webpack_exports__, __webpack_require__.d, __webpack_require__.* */
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "__extends": () => /* binding */ __extends
+/* harmony export */ });
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+/***/ }),
 
 /***/ "./RectPlayer/Model/PlayerModel.ts":
 /*!*****************************************!*\
   !*** ./RectPlayer/Model/PlayerModel.ts ***!
   \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! flagged exports */
+/*! export Author [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export Avatar [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export PlayList [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export PlayMode [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export Point [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export RectPlayerControl [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export RectPlayerOption [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export Track [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export __esModule [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_exports__ */
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RectPlayerControl = exports.PlayMode = exports.Point = exports.RectPlayerOption = exports.Avatar = exports.Author = exports.Track = exports.PlayList = void 0;
 /**
  * 播放列表信息
  * */
@@ -188,10 +147,13 @@ exports.PlayMode = PlayMode;
 /*!***********************************!*\
   !*** ./RectPlayer/NeteaseCore.ts ***!
   \***********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! flagged exports */
+/*! export NeteaseCore [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export __esModule [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_exports__, __webpack_require__ */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 /**
  *
@@ -200,7 +162,8 @@ exports.PlayMode = PlayMode;
  * PlayerCoreContract
  *
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.NeteaseCore = void 0;
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
 var PlayerModel_1 = __webpack_require__(/*! ./Model/PlayerModel */ "./RectPlayer/Model/PlayerModel.ts");
 var Tasks_1 = __webpack_require__(/*! ./dependence/Tasks */ "./RectPlayer/dependence/Tasks.ts");
@@ -396,10 +359,13 @@ exports.NeteaseCore = NeteaseCore;
 /*!**********************************!*\
   !*** ./RectPlayer/RectPlayer.ts ***!
   \**********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! flagged exports */
+/*! export RectPlayer [provided] [maybe used in main (runtime-defined)] [usage prevents renaming] */
+/*! export __esModule [provided] [maybe used in main (runtime-defined)] [usage prevents renaming] */
+/*! other exports [not provided] [maybe used in main (runtime-defined)] */
+/*! runtime requirements: __webpack_exports__, __webpack_require__ */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
 /**
  * @Y_Theta http://blog.y-theta.cn
@@ -409,7 +375,8 @@ exports.NeteaseCore = NeteaseCore;
  * netmusic-node    https://github.com/sqaiyan/netmusic-node
  *
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.RectPlayer = void 0;
 var Utils_1 = __webpack_require__(/*! ./Utils */ "./RectPlayer/Utils.ts");
 var PlayerModel_1 = __webpack_require__(/*! ./Model/PlayerModel */ "./RectPlayer/Model/PlayerModel.ts");
 var Tasks_1 = __webpack_require__(/*! ./dependence/Tasks */ "./RectPlayer/dependence/Tasks.ts");
@@ -739,7 +706,7 @@ var RectPlayer = /** @class */ (function () {
             return;
         //TODO:: select prve
         this._priv = true;
-        var prve = this._selecter.Priv(this._playmode, this._playlist.tracks, this._playstack[this._playstack.length - 1], this._playstack);
+        var prve = this._selecter["Priv"](this._playmode, this._playlist.tracks, this._playstack[this._playstack.length - 1], this._playstack);
         if (typeof prve == "number")
             this.play(prve);
     };
@@ -747,15 +714,12 @@ var RectPlayer = /** @class */ (function () {
         if (this._playstack.length <= 0)
             return;
         //TODO:: select next
-        var next = this._selecter.Next(this._playmode, this._playlist.tracks, this._playstack[this._playstack.length - 1], this._playstack);
+        var next = this._selecter["Next"](this._playmode, this._playlist.tracks, this._playstack[this._playstack.length - 1], this._playstack);
         if (typeof next == "number")
             this.play(next);
     };
     RectPlayer.prototype.preparesong = function (id) {
-        if (this._priv) {
-            this._playstack.push(id);
-            this._priv = false;
-        }
+        this._playstack.push(id);
         this._resolver.UpdateUI(this._playlist.tracks[id], this._playstack);
     };
     RectPlayer.prototype.onsourceended = function () {
@@ -864,12 +828,16 @@ exports.RectPlayer = RectPlayer;
 /*!**************************************************!*\
   !*** ./RectPlayer/RectplayerTemplateResolver.ts ***!
   \**************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! flagged exports */
+/*! export DefaultTemplateResolver [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export __esModule [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_exports__, __webpack_require__ */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.DefaultTemplateResolver = void 0;
 /**
  *
  * 模板解析类,用于定义如何解析其Html模板
@@ -1027,12 +995,16 @@ exports.DefaultTemplateResolver = DefaultTemplateResolver;
 /*!************************************!*\
   !*** ./RectPlayer/SongSelecter.ts ***!
   \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! flagged exports */
+/*! export SongSelecter [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export __esModule [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_exports__, __webpack_require__ */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.SongSelecter = void 0;
 var PlayerModel_1 = __webpack_require__(/*! ./Model/PlayerModel */ "./RectPlayer/Model/PlayerModel.ts");
 /**  */
 var SongSelecter = /** @class */ (function () {
@@ -1103,12 +1075,16 @@ exports.SongSelecter = SongSelecter;
 /*!*****************************!*\
   !*** ./RectPlayer/Utils.ts ***!
   \*****************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! flagged exports */
+/*! export Utils [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export __esModule [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_exports__ */
+/***/ ((__unused_webpack_module, exports) => {
 
-"use strict";
 
-Object.defineProperty(exports, "__esModule", { value: true });
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Utils = void 0;
 /**
  *
  * @Y_Theta http://blog.y-theta.cn
@@ -1254,12 +1230,20 @@ exports.Utils = Utils;
 /*!****************************************!*\
   !*** ./RectPlayer/dependence/Tasks.ts ***!
   \****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
+/*! flagged exports */
+/*! export AjaxOption [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export TaskArgs [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export TaskOrder [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export Tasks [provided] [no usage info] [missing usage info prevents renaming] */
+/*! export __esModule [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_exports__, __webpack_require__ */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
-"use strict";
-/* WEBPACK VAR INJECTION */(function(__extends) {
-Object.defineProperty(exports, "__esModule", { value: true });
+/* provided dependency */ var __extends = __webpack_require__(/*! ./RectPlayer/dependence/extends.js */ "./RectPlayer/dependence/extends.js")["__extends"];
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.TaskArgs = exports.TaskOrder = exports.AjaxOption = exports.Tasks = void 0;
 /**
  * 任务列表中的任务执行顺序
  */
@@ -1577,38 +1561,69 @@ var Tasks = /** @class */ (function () {
 }());
 exports.Tasks = Tasks;
 
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./RectPlayer/dependence/extends.js */ "./RectPlayer/dependence/extends.js")["__extends"]))
-
-/***/ }),
-
-/***/ "./RectPlayer/dependence/extends.js":
-/*!******************************************!*\
-  !*** ./RectPlayer/dependence/extends.js ***!
-  \******************************************/
-/*! exports provided: __extends */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__extends", function() { return __extends; });
-var __extends = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-
 
 /***/ })
 
-/******/ });
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		if(__webpack_module_cache__[moduleId]) {
+/******/ 			return __webpack_module_cache__[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => Object.prototype.hasOwnProperty.call(obj, prop)
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+/******/ 	// module exports must be returned from runtime so entry inlining is disabled
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__("./RectPlayer/RectPlayer.ts");
+/******/ })()
+;
 });
 //# sourceMappingURL=rectPlayer.js.map
